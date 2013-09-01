@@ -16,6 +16,10 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand):
 
     def __init__(self, *args, **kwargs):
         super(SublimeSyncRetrieveCommand, self).__init__(*args, **kwargs)
+        self.directory_list = [
+            sublime.packages_path(),
+            sublime.installed_packages_path()
+        ]
         self.stream = None
         self.tf = None
 
@@ -23,7 +27,7 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand):
         """
         Move packages directories to a backup one
         """
-        for directory in DIRECTORY_LIST:
+        for directory in self.directory_list:
             backup_directory = '%s.bak' % os.path.normpath(directory)
             if os.path.exists(backup_directory):
                 shutil.rmtree(backup_directory)
@@ -53,7 +57,7 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand):
 
             with tarfile.open(fileobj=stream, mode='r:gz') as tf:
                 # Extract archive
-                for directory in DIRECTORY_LIST:
+                for directory in self.directory_list:
                     directory_basename = os.path.basename(os.path.normpath(directory))
                     tf.extractall(os.path.join(directory, os.path.pardir), [tarinfo for tarinfo in tf.getmembers() if tarinfo.name.startswith('%s/' % directory_basename)])
 
