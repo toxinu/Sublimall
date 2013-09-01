@@ -49,7 +49,12 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand):
                 # Extract archive
                 for directory in self.directory_list:
                     directory_basename = os.path.basename(os.path.normpath(directory))
-                    tf.extractall(os.path.join(directory, os.path.pardir), [tarinfo for tarinfo in tf.getmembers() if tarinfo.name.startswith('%s' % directory_basename)])
+                    members = [tarinfo for tarinfo in tf.getmembers() if tarinfo.name.startswith('%s' % directory_basename)]
+                    for tarinfo in members:
+                        try:
+                            tf.extract(tarinfo, os.path.join(directory, os.path.pardir))
+                        except IOError:
+                            pass
 
             sublime.status_message(u"Your sublime has been synced !")
             stream.close()
