@@ -5,7 +5,7 @@ import sublime
 import sublime_plugin
 import tarfile
 import tempfile
-from .settings import API_UPLOAD_URL
+from .settings import API_UPLOAD_URL, DIRECTORY_LIST
 
 sys.path.append(os.path.dirname(__file__))
 import requests
@@ -67,11 +67,8 @@ class SublimeSyncUploadCommand(sublime_plugin.ApplicationCommand):
         sublime.status_message(u"Creating archive...")
         self.tf = self.create_tarfile()
 
-        packages_path = sublime.packages_path()
-        self.add_tarfile_directory(packages_path)
-
-        installed_packages_path = sublime.installed_packages_path()
-        self.add_tarfile_directory(installed_packages_path)
+        for directory in DIRECTORY_LIST:
+            self.add_tarfile_directory(directory)
 
         sublime.status_message(u"Sending archive...")
         self.send_to_api()
