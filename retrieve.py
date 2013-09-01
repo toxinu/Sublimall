@@ -28,7 +28,8 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand):
             backup_directory = '%s.bak' % os.path.normpath(directory)
             if os.path.exists(backup_directory):
                 shutil.rmtree(backup_directory)
-            shutil.move(directory, backup_directory)
+            if os.path.exists(directory):
+                shutil.move(directory, backup_directory)
 
     def run(self, *args):
         """
@@ -61,7 +62,7 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand):
                 # Extract archive
                 for directory in self.directory_list:
                     directory_basename = os.path.basename(os.path.normpath(directory))
-                    tf.extractall(os.path.join(directory, os.path.pardir), [tarinfo for tarinfo in tf.getmembers() if tarinfo.name.startswith('%s/' % directory_basename)])
+                    tf.extractall(os.path.join(directory, os.path.pardir), [tarinfo for tarinfo in tf.getmembers() if tarinfo.name.startswith('%s' % directory_basename)])
 
             sublime.status_message(u"Your sublime has been synced !")
             stream.close()
