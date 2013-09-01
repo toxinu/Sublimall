@@ -16,10 +16,7 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand):
 
     def __init__(self, *args, **kwargs):
         super(SublimeSyncRetrieveCommand, self).__init__(*args, **kwargs)
-        self.directory_list = [
-            sublime.packages_path(),
-            sublime.installed_packages_path()
-        ]
+        self.directory_list = None
         self.stream = None
         self.tf = None
 
@@ -37,6 +34,11 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand):
         """
         Retrieve packages and uncompress them
         """
+        self.directory_list = [
+            sublime.packages_path(),
+            sublime.installed_packages_path()
+        ]
+
         self.backup_packages()
 
         settings = sublime.load_settings('sublime-sync.sublime-settings')

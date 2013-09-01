@@ -15,10 +15,7 @@ class SublimeSyncUploadCommand(sublime_plugin.ApplicationCommand):
 
     def __init__(self, *args, **kwargs):
         super(SublimeSyncUploadCommand, self).__init__(*args, **kwargs)
-        self.directory_list = [
-            sublime.packages_path(),
-            sublime.installed_packages_path()
-        ]
+        self.directory_list = None
         self.temp_filename = None
         self.tf = None
 
@@ -68,6 +65,11 @@ class SublimeSyncUploadCommand(sublime_plugin.ApplicationCommand):
         """
         Create a tar of all packages and settings
         """
+        self.directory_list = [
+            sublime.packages_path(),
+            sublime.installed_packages_path()
+        ]
+
         sublime.status_message(u"Creating archive...")
         self.tf = self.create_tarfile()
 
