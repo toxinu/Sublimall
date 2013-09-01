@@ -16,7 +16,6 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand):
 
     def __init__(self, *args, **kwargs):
         super(SublimeSyncRetrieveCommand, self).__init__(*args, **kwargs)
-        self.directory_list =
         self.stream = None
         self.tf = None
 
