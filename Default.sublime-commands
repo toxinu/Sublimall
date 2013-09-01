@@ -1,0 +1,10 @@
+[
+    {
+        "command": "sublime_sync_upload",
+        "caption": "SublimeSync: Upload to server"
+    },
+    {
+        "command": "sublime_sync_retrieve",
+        "caption": "SublimeSync: Retrieve from server"
+    }
+]
