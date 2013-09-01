@@ -14,7 +14,7 @@ import requests
 class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand):
 
     def __init__(self, *args, **kwargs):
-        super(SublimeRetrieveSyncCommand, self).__init__(*args, **kwargs)
+        super(SublimeSyncRetrieveCommand, self).__init__(*args, **kwargs)
         self.stream = None
         self.tf = None
 

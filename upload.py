@@ -14,7 +14,7 @@ import requests
 class SublimeSyncUploadCommand(sublime_plugin.ApplicationCommand):
 
     def __init__(self, *args, **kwargs):
-        super(SublimeSendSyncCommand, self).__init__(*args, **kwargs)
+        super(SublimeSyncUploadCommand, self).__init__(*args, **kwargs)
         self.temp_filename = None
         self.tf = None
 
