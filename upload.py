@@ -5,7 +5,7 @@ import sublime
 import sublime_plugin
 import tarfile
 import tempfile
-from .settings import API_UPLOAD_URL
+from settings import API_UPLOAD_URL
 
 sys.path.append(os.path.dirname(__file__))
 import requests
