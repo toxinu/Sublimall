@@ -1,0 +1,40 @@
+[
+    {
+        "caption": "Preferences",
+        "mnemonic": "n",
+        "id": "preferences",
+        "children":
+        [
+            {
+                "caption": "Package Settings",
+                "mnemonic": "P",
+                "id": "package-settings",
+                "children":
+                [
+                    {
+                        "caption": "SublimeSync",
+                        "children":
+                        [
+                            {
+                                "command": "open_file",
+                                "args": {"file": "${packages}/SublimeSync/sublime-sync.sublime-settings"},
+                                "caption": "Settings – User"
+                            },
+                            {
+                                "caption": "-"
+                            },
+                            {
+                                "command": "sublime_send_sync",
+                                "caption": "Upload to server"
+                            },
+                            {
+                                "command": "sublime_retrieve_sync",
+                                "caption": "Retrieve from server"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]
