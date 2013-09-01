@@ -5,7 +5,7 @@ import sublime
 import sublime_plugin
 import tarfile
 from io import BytesIO
-from settings import API_RETRIEVE_URL
+from .settings import API_RETRIEVE_URL
 
 sys.path.append(os.path.dirname(__file__))
 import requests
