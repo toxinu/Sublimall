@@ -24,11 +24,11 @@
                                 "caption": "-"
                             },
                             {
-                                "command": "sublime_send_sync",
+                                "command": "sublime_sync_upload",
                                 "caption": "Upload to server"
                             },
                             {
-                                "command": "sublime_retrieve_sync",
+                                "command": "sublime_sync_retrieve",
                                 "caption": "Retrieve from server"
                             }
                         ]
