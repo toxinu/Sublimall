@@ -30,7 +30,11 @@ class SublimeSyncUploadCommand(sublime_plugin.ApplicationCommand):
         """
         Add directory to the zipfile
         """
-        self.tf.add(directory, arcname=os.path.basename(os.path.normpath(directory)))
+        self.tf.add(
+            name=directory,
+            arcname=os.path.basename(os.path.normpath(directory)),
+            exclude=lambda filename: filename.startswith(os.path.dirname(os.path.realpath(__file__)))
+        )
 
     def send_to_api(self):
         """

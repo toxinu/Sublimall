@@ -20,17 +20,6 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand):
         self.stream = None
         self.tf = None
 
-    def backup_packages(self):
-        """
-        Move packages directories to a backup one
-        """
-        for directory in self.directory_list:
-            backup_directory = '%s.bak' % os.path.normpath(directory)
-            if os.path.exists(backup_directory):
-                shutil.rmtree(backup_directory)
-            if os.path.exists(directory):
-                shutil.move(directory, backup_directory)
-
     def run(self, *args):
         """
         Retrieve packages and uncompress them
@@ -39,8 +28,6 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand):
             sublime.packages_path(),
             sublime.installed_packages_path()
         ]
-
-        self.backup_packages()
 
         settings = sublime.load_settings('sublime-sync.sublime-settings')
         data = {
