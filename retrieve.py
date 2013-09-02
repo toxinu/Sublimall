@@ -29,7 +29,7 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand):
         """
         sublime.status_message(u"Decrypting archive...")
 
-        with open('keys/sublimesync', 'rb') as privatekey_file:
+        with open(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'keys/sublimesync'), 'rb') as privatekey_file:
             keydata = privatekey_file.read()
         private_key = rsa.PrivateKey.load_pkcs1(keydata)
 

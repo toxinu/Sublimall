@@ -68,7 +68,7 @@ class SublimeSyncUploadCommand(sublime_plugin.ApplicationCommand):
         """
         Encrypt stream using public key
         """
-        with open('keys/sublimesync.pub', 'rb') as publickey_file:
+        with open(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'keys/sublimesync.pub'), 'rb') as publickey_file:
             keydata = publickey_file.read()
         public_key = rsa.PublicKey.load_pkcs1(keydata)
 
