@@ -3,12 +3,15 @@ import os
 import sys
 import sublime
 import sublime_plugin
-import tarfile
+import zipfile
 import tempfile
+from io import BytesIO
 from .settings import API_UPLOAD_URL
 
 sys.path.append(os.path.dirname(__file__))
 import requests
+from rsa.bigfile import encrypt_bigfile
+import rsa
 
 
 class SublimeSyncUploadCommand(sublime_plugin.ApplicationCommand):
@@ -17,37 +20,76 @@ class SublimeSyncUploadCommand(sublime_plugin.ApplicationCommand):
         super(SublimeSyncUploadCommand, self).__init__(*args, **kwargs)
         self.directory_list = None
         self.temp_filename = None
-        self.tf = None
+        self.out_stream = None
+        self.stream = None
+        self.pwd = None
+        self.zf = None
 
-    def create_tarfile(self):
+    def pack_and_send(self):
         """
-        Create an temporary tarfile
+        Create archive and send it to the API
         """
-        _, self.temp_filename = tempfile.mkstemp(suffix='.tar.gz')
-        return tarfile.open(self.temp_filename, mode="w:gz")
+        self.directory_list = [
+            sublime.packages_path(),
+            sublime.installed_packages_path()
+        ]
 
-    def add_tarfile_directory(self, directory):
+        sublime.status_message(u"Creating archive...")
+
+        self.zf = self.create_archive()
+
+        for directory in self.directory_list:
+            self.add_archive_directory(directory)
+
+        sublime.status_message(u"Sending archive...")
+        self.send_to_api()
+
+    def create_archive(self):
         """
-        Add directory to the zipfile
+        Create an in memory archive
         """
-        self.tf.add(
-            name=directory,
-            arcname=os.path.basename(os.path.normpath(directory)),
-            exclude=lambda filename: filename.startswith(os.path.dirname(os.path.realpath(__file__)))
-        )
+        self.stream = BytesIO()
+        return zipfile.ZipFile(self.stream, mode='w', compression=zipfile.ZIP_DEFLATED)
+
+    def add_archive_directory(self, directory):
+        """
+        Add directory to the archive
+        """
+        for root, dirs, files in os.walk(directory):
+            for name in files:
+                filename = os.path.join(root, name)
+                if not filename.startswith(os.path.dirname(os.path.realpath(__file__))):
+                    self.zf.write(
+                        filename=filename,
+                        arcname=filename.lstrip(os.path.dirname(directory))
+                    )
+
+    def encrypt_stream(self):
+        """
+        Encrypt stream using public key
+        """
+        with open('keys/sublimesync.pub', 'rb') as publickey_file:
+            keydata = publickey_file.read()
+        public_key = rsa.PublicKey.load_pkcs1(keydata)
+
+        self.out_stream = BytesIO()
+        encrypt_bigfile(self.stream, self.out_stream, public_key)
+        self.out_stream.seek(0)
 
     def send_to_api(self):
         """
-        Send tar file to API
+        Send archive file to API
         """
-        self.tf.close()
+        self.zf.close()
+        self.stream.seek(0)
 
-        settings = sublime.load_settings('sublime-sync.sublime-settings')
+        self.encrypt_stream()
+
         files = {
-            'package': open(self.temp_filename, 'rb'),
+            'package': self.out_stream.read(),
             'version': sublime.version()[:1],
-            'username': settings.get('username', ''),
-            'api_key': settings.get('api_key', ''),
+            'username': self.username,
+            'api_key': self.api_key,
         }
 
         response = requests.post(url=API_UPLOAD_URL, files=files)
@@ -57,28 +99,23 @@ class SublimeSyncUploadCommand(sublime_plugin.ApplicationCommand):
         elif response.status_code == 403:
             sublime.status_message(u"Error while sending archive : wrong credentials")
 
-
-        os.unlink(self.temp_filename)
         self.post_send()
 
     def post_send(self):
+        self.stream.close()
+        self.out_stream.close()
         self.temp_filename = None
-        self.tf = None
+        self.out_stream = None
+        self.stream = None
+        self.zf = None
 
     def run(self, *args):
         """
-        Create a tar of all packages and settings
+        Create an archive of all packages and settings
         """
-        self.directory_list = [
-            sublime.packages_path(),
-            sublime.installed_packages_path()
-        ]
+        settings = sublime.load_settings('sublime-sync.sublime-settings')
 
-        sublime.status_message(u"Creating archive...")
-        self.tf = self.create_tarfile()
+        self.username = settings.get('username', '')
+        self.api_key = settings.get('api_key', '')
 
-        for directory in self.directory_list:
-            self.add_tarfile_directory(directory)
-
-        sublime.status_message(u"Sending archive...")
-        self.send_to_api()
+        self.pack_and_send()
