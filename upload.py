@@ -1,4 +1,4 @@
-#-*- coding:utf-8 -*-
+# -*- coding:utf-8 -*-
 import os
 import sys
 import sublime
@@ -55,8 +55,7 @@ class SublimeSyncUploadCommand(sublime_plugin.ApplicationCommand):
         if response.status_code == 200:
             sublime.status_message(u"Successfuly sent archive")
         elif response.status_code == 403:
-            sublime.status_message(u"Error while sending archive : wrong credentials")
-
+            sublime.status_message(u"Error while sending archive: wrong credentials")
 
         os.unlink(self.temp_filename)
         self.post_send()
@@ -65,7 +64,7 @@ class SublimeSyncUploadCommand(sublime_plugin.ApplicationCommand):
         self.temp_filename = None
         self.tf = None
 
-    def run(self, *args):
+    def start(self, *args):
         """
         Create a tar of all packages and settings
         """
@@ -82,3 +81,6 @@ class SublimeSyncUploadCommand(sublime_plugin.ApplicationCommand):
 
         sublime.status_message(u"Sending archive...")
         self.send_to_api()
+
+    def run(self, *args):
+        sublime.set_timeout_async(self.start, 0)
