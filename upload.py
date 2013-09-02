@@ -64,7 +64,7 @@ class SublimeSyncUploadCommand(sublime_plugin.ApplicationCommand):
         self.temp_filename = None
         self.tf = None
 
-    def start(self, *args):
+    def start(self):
         """
         Create a tar of all packages and settings
         """
@@ -82,5 +82,5 @@ class SublimeSyncUploadCommand(sublime_plugin.ApplicationCommand):
         sublime.status_message(u"Sending archive...")
         self.send_to_api()
 
-    def run(self, *args):
+    def run(self):
         sublime.set_timeout_async(self.start, 0)

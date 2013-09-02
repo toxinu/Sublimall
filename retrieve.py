@@ -19,7 +19,7 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand):
         self.stream = None
         self.tf = None
 
-    def start(self, *args):
+    def start(self):
         """
         Retrieve packages and uncompress them
         """
@@ -64,5 +64,5 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand):
         elif response.status_code == 404:
             sublime.status_message(u"Error while requesting archive : version %s not found on remote" % sublime.version())
 
-    def run(self, *args):
+    def run(self):
         sublime.set_timeout_async(self.start, 0)
