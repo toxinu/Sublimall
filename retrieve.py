@@ -1,29 +1,34 @@
-#-*- coding:utf-8 -*-
+# -*- coding:utf-8 -*-
 import os
 import sys
-import shutil
 import sublime
 import sublime_plugin
 import tarfile
 from io import BytesIO
 from .settings import API_RETRIEVE_URL
+from .command import CommandWithStatus
 
 sys.path.append(os.path.dirname(__file__))
 import requests
 
 
-class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand):
+class SublimeSyncRetrieveCommand(
+        sublime_plugin.ApplicationCommand,
+        CommandWithStatus):
 
     def __init__(self, *args, **kwargs):
         super(SublimeSyncRetrieveCommand, self).__init__(*args, **kwargs)
         self.directory_list = None
         self.stream = None
         self.tf = None
+        self.running = False
 
-    def run(self, *args):
+    def start(self):
         """
         Retrieve packages and uncompress them
         """
+        self.running = True
+
         self.directory_list = [
             sublime.packages_path(),
             sublime.installed_packages_path()
@@ -36,14 +41,14 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand):
             'api_key': settings.get('api_key', ''),
         }
 
-        sublime.status_message(u"Requesting archive...")
+        self.set_message("Requesting archive...")
         response = requests.post(url=API_RETRIEVE_URL, data=data, stream=True)
 
         if response.status_code == 200:
-            sublime.status_message(u"Downloading archive...")
+            self.set_message("Downloading archive...")
             stream = BytesIO(response.raw.read())
 
-            sublime.status_message(u"Extracting archive...")
+            self.set_message("Extracting archive...")
 
             with tarfile.open(fileobj=stream, mode='r:gz') as tf:
                 # Extract archive
@@ -56,11 +61,20 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand):
                         except IOError:
                             pass
 
-            sublime.status_message(u"Your sublime has been synced !")
+            self.set_message("Your sublime has been synced !")
             stream.close()
 
         elif response.status_code == 403:
-            sublime.status_message(u"Error while requesting archive : wrong credentials")
+            self.set_message("Error while requesting archive: wrong credentials")
 
         elif response.status_code == 404:
-            sublime.status_message(u"Error while requesting archive : version %s not found on remote" % sublime.version())
+            self.set_message("Error while requesting archive: version %s not found on remote" % sublime.version())
+
+        self.unset_message()
+        self.running = False
+
+    def run(self, *args):
+        if self.running:
+            self.set_quick_message("Already working on a backup...")
+            return
+        sublime.set_timeout_async(self.start, 0)
