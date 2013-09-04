@@ -6,12 +6,11 @@ import sublime_plugin
 import zipfile
 import tempfile
 from io import BytesIO
+from .crypt import Crypto
 from .settings import API_UPLOAD_URL
 
 sys.path.append(os.path.dirname(__file__))
 import requests
-from rsa.bigfile import encrypt_bigfile
-import rsa
 
 
 class SublimeSyncUploadCommand(sublime_plugin.ApplicationCommand):
@@ -41,8 +40,13 @@ class SublimeSyncUploadCommand(sublime_plugin.ApplicationCommand):
         for directory in self.directory_list:
             self.add_archive_directory(directory)
 
-        sublime.status_message(u"Sending archive...")
-        self.send_to_api()
+        self.zf.close()
+        self.stream.seek(0)
+
+        if self.encrypt:
+            self.input_password()
+        else:
+            self.send_to_api()
 
     def create_archive(self):
         """
@@ -61,29 +65,36 @@ class SublimeSyncUploadCommand(sublime_plugin.ApplicationCommand):
                 if not filename.startswith(os.path.dirname(os.path.realpath(__file__))):
                     self.zf.write(
                         filename=filename,
-                        arcname=filename.lstrip(os.path.dirname(directory))
+                        arcname=os.path.relpath(filename, os.path.dirname(directory))
                     )
 
-    def encrypt_stream(self):
+    def input_password(self):
+        """
+        Show an input panel for entering password
+        """
+        sublime.active_window().show_input_panel(
+            "Enter archive password",
+            initial_text='',
+            on_done=self.encrypt_stream,
+            on_cancel=self.send_to_api,
+            on_change=None
+        )
+
+    def encrypt_stream(self, password):
         """
         Encrypt stream using public key
         """
-        with open(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'keys/sublimesync.pub'), 'rb') as publickey_file:
-            keydata = publickey_file.read()
-        public_key = rsa.PublicKey.load_pkcs1(keydata)
-
-        self.out_stream = BytesIO()
-        encrypt_bigfile(self.stream, self.out_stream, public_key)
-        self.out_stream.seek(0)
+        self.out_stream = Crypto(self.stream).encrypt_data(password=password)
+        self.send_to_api()
 
     def send_to_api(self):
         """
         Send archive file to API
         """
-        self.zf.close()
-        self.stream.seek(0)
+        sublime.status_message(u"Sending archive...")
 
-        self.encrypt_stream()
+        if self.out_stream is None:
+            self.out_stream = self.stream
 
         files = {
             'package': self.out_stream.read(),
@@ -117,5 +128,6 @@ class SublimeSyncUploadCommand(sublime_plugin.ApplicationCommand):
 
         self.username = settings.get('username', '')
         self.api_key = settings.get('api_key', '')
+        self.encrypt = settings.get('encrypt', False)
 
         self.pack_and_send()

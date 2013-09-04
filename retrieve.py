@@ -6,12 +6,11 @@ import sublime
 import sublime_plugin
 import zipfile
 from io import BytesIO
+from .crypt import Crypto
 from .settings import API_RETRIEVE_URL
 
 sys.path.append(os.path.dirname(__file__))
 import requests
-from rsa.bigfile import decrypt_bigfile
-import rsa
 
 
 class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand):
@@ -23,19 +22,31 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand):
         self.stream = None
         self.zf = None
 
-    def decrypt_stream(self):
+    def decrypt_stream(self, password):
         """
         Decrypt stream using private key
         """
-        sublime.status_message(u"Decrypting archive...")
+        self.out_stream = Crypto(self.stream).decrypt_data(password=password)
+        try:
+            self.zf = zipfile.ZipFile(self.out_stream, 'r')
+            self.unpack()
+        except zipfile.BadZipfile:
+            sublime.status_message(u"Wrong password : aborting")
 
-        with open(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'keys/sublimesync'), 'rb') as privatekey_file:
-            keydata = privatekey_file.read()
-        private_key = rsa.PrivateKey.load_pkcs1(keydata)
+    def abort(self):
+        sublime.status_message(u"No password supplied : aborting")
 
-        self.out_stream = BytesIO()
-        decrypt_bigfile(self.stream, self.out_stream, private_key)
-        self.out_stream.seek(0)
+    def input_password(self):
+        """
+        Show an input panel for entering password
+        """
+        sublime.active_window().show_input_panel(
+            "Enter archive password",
+            initial_text='',
+            on_done=self.decrypt_stream,
+            on_cancel=self.abort,
+            on_change=None
+        )
 
     def unpack(self):
         """
@@ -44,22 +55,22 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand):
         sublime.status_message(u"Extracting archive...")
 
         # Extract archive
-        with zipfile.ZipFile(self.out_stream, 'r') as zf:
-            for directory in self.directory_list:
-                directory_basename = os.path.basename(os.path.normpath(directory))
-                members = [zipinfo for zipinfo in zf.infolist() if zipinfo.filename.startswith('%s' % directory_basename)]
-                for zipinfo in members:
-                    try:
-                        zf.extract(zipinfo, os.path.join(directory, os.path.pardir))
-                    except IOError as e:
-                        print(e)
-                        pass
+        for directory in self.directory_list:
+            directory_basename = os.path.basename(os.path.normpath(directory))
+            members = [zipinfo for zipinfo in self.zf.infolist() if zipinfo.filename.startswith(directory_basename)]
+            for zipinfo in members:
+                try:
+                    self.zf.extract(zipinfo, os.path.join('/home/florian/tmp/unpack/', os.path.pardir))
+                    #self.zf.extract(zipinfo, os.path.join(directory, os.path.pardir))
+                except IOError:
+                    pass
 
         self.post_unpack()
 
     def post_unpack(self):
         self.stream.close()
-        self.out_stream.close()
+        if self.out_stream is not None:
+            self.out_stream.close()
 
     def retrieve_from_api(self):
         """
@@ -77,8 +88,12 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand):
         if response.status_code == 200:
             sublime.status_message(u"Downloading archive...")
             self.stream = BytesIO(response.raw.read())
-            self.decrypt_stream()
-            self.unpack()
+
+            try:
+                self.zf = zipfile.ZipFile(self.stream, 'r')
+                self.unpack()
+            except zipfile.BadZipfile:
+                self.input_password()
 
         elif response.status_code == 403:
             sublime.status_message(u"Error while requesting archive : wrong credentials")
