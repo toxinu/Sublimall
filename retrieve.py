@@ -67,8 +67,7 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand, CommandWithS
             members = [zipinfo for zipinfo in self.zf.infolist() if zipinfo.filename.startswith(directory_basename)]
             for zipinfo in members:
                 try:
-                    self.zf.extract(zipinfo, os.path.join('/home/florian/tmp/unpack/hep/', os.path.pardir))
-                    #self.zf.extract(zipinfo, os.path.join(directory, os.path.pardir))
+                    self.zf.extract(zipinfo, os.path.join(directory, os.path.pardir))
                 except IOError:
                     pass
 
