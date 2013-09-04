@@ -12,9 +12,7 @@ sys.path.append(os.path.dirname(__file__))
 import requests
 
 
-class SublimeSyncRetrieveCommand(
-        sublime_plugin.ApplicationCommand,
-        CommandWithStatus):
+class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand, CommandWithStatus):
 
     def __init__(self, *args, **kwargs):
         super(SublimeSyncRetrieveCommand, self).__init__(*args, **kwargs)
