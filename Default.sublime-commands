@@ -6,5 +6,9 @@
     {
         "command": "sublime_sync_retrieve",
         "caption": "SublimeSync: Retrieve from server"
+    },
+    {
+        "command": "sublime_sync_restore",
+        "caption": "SublimeSync: Restore"
     }
 ]

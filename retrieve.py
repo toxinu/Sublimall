@@ -1,13 +1,15 @@
 # -*- coding:utf-8 -*-
 import os
 import sys
+import time
+import shutil
 import sublime
-import sublime_plugin
 import zipfile
-from io import BytesIO
-from .crypt import Crypto
-from .settings import API_RETRIEVE_URL
+import sublime_plugin
+from .archiver import Archiver
 from .command import CommandWithStatus
+from .settings import API_RETRIEVE_URL, BACKUP_DIRECTORY_NAME
+from .utils import generate_temp_filename
 
 sys.path.append(os.path.dirname(__file__))
 import requests
@@ -17,72 +19,60 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand, CommandWithS
 
     def __init__(self, *args, **kwargs):
         super(SublimeSyncRetrieveCommand, self).__init__(*args, **kwargs)
-        self.directory_list = None
-        self.out_stream = None
-        self.password = None
-        self.running = False
         self.stream = None
-        self.zf = None
+        self.running = False
+        self.archive_filename = None
+
+    def post_unpack(self):
+        """
+        Resets values
+        """
+        self.unset_message()
+        os.unlink(self.archive_filename)
+        self.stream = None
+        self.running = False
+        self.archive_filename = None
 
     def abort(self):
-        self.set_message(u"No password supplied : aborting")
+        """
+        Aborts unpacking
+        """
+        self.set_message("No password supplied : aborting.")
         self.post_unpack()
 
-    def input_password(self):
+    def prompt_password(self):
         """
-        Show an input panel for entering password
+        Shows an input panel for entering password
         """
         sublime.active_window().show_input_panel(
             "Enter archive password",
             initial_text='',
-            on_done=self.pre_decrypt_stream,
+            on_done=self.check_zipfile,
             on_cancel=self.abort,
             on_change=None
         )
 
-    def pre_decrypt_stream(self, password):
+    def check_zipfile(self, password=None, first_try=False):
         """
-        Start an decryption thread
+        Check if stream is an unprotected zipfile
+        If retry set to True, loop one more time
         """
-        self.password = password
-        self.set_message("Decrypting archive...")
-        sublime.set_timeout_async(self.decrypt_stream, 0)
-
-    def decrypt_stream(self):
-        self.out_stream = Crypto(self.stream).decrypt_data(password=self.password)
+        # Try opening the zipfile to check password
         try:
-            self.zf = zipfile.ZipFile(self.out_stream, 'r')
-            self.unpack()
-        except zipfile.BadZipfile:
-            self.set_message(u"Wrong password : aborting")
-            self.post_unpack()
+            if password is not None:
+                self.zf.setpassword(password.encode())
+            self.zf.testzip()
+        except RuntimeError:
+            if first_try:
+                self.set_message("Archive is protected. Please enter password.")
+            else:
+                self.set_message("Wrong password")
+            self.prompt_password()
+        else:
+            self.zf.close()
+            self.unpack(password)
 
-    def unpack(self):
-        """
-        Unpack archive to packages folders
-        """
-        # Extract archive
-        for directory in self.directory_list:
-            directory_basename = os.path.basename(os.path.normpath(directory))
-            members = [zipinfo for zipinfo in self.zf.infolist() if zipinfo.filename.startswith(directory_basename)]
-            for zipinfo in members:
-                try:
-                    self.zf.extract(zipinfo, os.path.join(directory, os.path.pardir))
-                except IOError:
-                    pass
-
-        self.set_message(u"Your Sublime has been synced !")
-        self.post_unpack()
-
-    def post_unpack(self):
-        self.unset_message()
-        self.stream.close()
-        self.password = None
-        self.running = False
-        if self.out_stream is not None:
-            self.out_stream.close()
-
-    def retrieve_from_api(self):
+    def retrieve_from_server(self):
         """
         Retrieve archive from API
         """
@@ -97,19 +87,51 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand, CommandWithS
 
         if response.status_code == 200:
             self.set_message(u"Downloading archive...")
-            self.stream = BytesIO(response.raw.read())
 
-            self.set_message(u"Unpacking...")
-            try:
-                self.zf = zipfile.ZipFile(self.stream, 'r')
-                self.unpack()
-            except zipfile.BadZipfile:
-                self.input_password()
+            # Create a temporary file and write response content in it
+            self.archive_filename = generate_temp_filename()
+            self.stream = open(self.archive_filename, 'wb')
+            shutil.copyfileobj(response.raw, self.stream)
+            self.stream.close()
+
+            # Had some mysterious problems using in memory stream so re-open file instead
+            self.zf = zipfile.ZipFile(self.archive_filename, 'r')
+            self.check_zipfile(first_try=True)
 
         elif response.status_code == 403:
             self.set_message("Error while requesting archive: wrong credentials")
+
         elif response.status_code == 404:
             self.set_message("Error while requesting archive: version %s not found on remote" % sublime.version())
+
+    def backup(self):
+        """
+        Creates a backup of Packages and Installed Packages before unpacking
+        """
+        archiver = Archiver()
+        archiver.pack_packages(output_filename=os.path.join(os.path.dirname(__file__), BACKUP_DIRECTORY_NAME, '%s.zip' % time.time()))
+
+    def unpack(self, password=None):
+        """
+        Unpack archive
+        """
+        self.backup()
+
+        # Move pacakges directories to a .bak
+        self.set_message(u"Moving directories...")
+        archiver = Archiver()
+        archiver.move_packages_to_backup_dirs()
+
+        # Unpack backup
+        self.set_message(u"Extracting archive...")
+        archiver.unpack_packages(self.archive_filename, password=password)
+
+        # Delete moved directories
+        self.set_message(u"Deleting old directories...")
+        archiver.remove_backup_dirs()
+
+        self.set_message(u"Your Sublime Text has been synced !")
+        self.post_unpack()
 
     def start(self):
         """
@@ -117,17 +139,12 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand, CommandWithS
         """
         self.running = True
 
-        self.directory_list = [
-            sublime.packages_path(),
-            sublime.installed_packages_path()
-        ]
-
         settings = sublime.load_settings('sublime-sync.sublime-settings')
 
         self.username = settings.get('username', '')
         self.api_key = settings.get('api_key', '')
 
-        self.retrieve_from_api()
+        self.retrieve_from_server()
 
     def run(self, *args):
         if self.running:

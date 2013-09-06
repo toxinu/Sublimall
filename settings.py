@@ -5,3 +5,4 @@ from urllib.parse import urljoin
 API_ROOT_URL = 'http://sublimesync.florianpaquet.com:8080/'
 API_UPLOAD_URL = urljoin(API_ROOT_URL, '/upload/')
 API_RETRIEVE_URL = urljoin(API_ROOT_URL, '/retrieve/')
+BACKUP_DIRECTORY_NAME = 'backups'

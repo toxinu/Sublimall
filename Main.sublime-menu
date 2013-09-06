@@ -30,6 +30,10 @@
                             {
                                 "command": "sublime_sync_retrieve",
                                 "caption": "Retrieve from server"
+                            },
+                            {
+                                "command": "sublime_sync_restore",
+                                "caption": "Restore"
                             }
                         ]
                     }
