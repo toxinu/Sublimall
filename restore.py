@@ -37,6 +37,7 @@ class SublimeSyncRestore(sublime_plugin.ApplicationCommand, CommandWithStatus):
             archiver.remove_backup_dirs()
 
             self.set_message(u"Yout Sublime Text has been restored !")
+            self.unset_message()
             self.running = False
 
     def datetime_from_filename(self, filename):
