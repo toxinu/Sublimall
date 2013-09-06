@@ -50,17 +50,30 @@ class SublimeSyncRestore(sublime_plugin.ApplicationCommand, CommandWithStatus):
         """
         Retrieves a list of backup archives
         """
-        self.backups = [['Backup on %s' % self.datetime_from_filename(f).strftime('%c'), f]
-                        for f in os.listdir(self.backup_path) if os.path.isfile(os.path.join(self.backup_path, f))]
+        self.backups = []
+
+        for f in os.listdir(self.backup_path):
+            if os.path.isfile(os.path.join(self.backup_path, f)):
+                try:
+                    d = self.datetime_from_filename(f)
+                    self.backups.append(['Backup on %s' % d.strftime('%c'), f])
+                except Exception:
+                    pass
+
         self.backups.sort(key=lambda item: self.datetime_from_filename(item[1]), reverse=True)
 
     def start(self):
         """
         Restores a backup
         """
-        self.running = True
         self.get_backups()
-        sublime.active_window().show_quick_panel(self.backups, self.restore)
+
+        if self.backups:
+            self.running = True
+            sublime.active_window().show_quick_panel(self.backups, self.restore)
+        else:
+            self.set_message("No backups found")
+            self.unset_message()
 
     def run(self, *args):
         if self.running:
