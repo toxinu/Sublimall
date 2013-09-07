@@ -2,7 +2,7 @@
 import os
 import shutil
 import sublime
-from subprocess import Popen, PIPE
+import subprocess
 from .utils import generate_temp_filename
 
 
@@ -64,7 +64,11 @@ class Archiver(object):
             command_args.append(kwargs['input_file'])
 
         # Run command
-        process = Popen(command_args, stdout=PIPE, stderr=PIPE)
+        startupinfo = None
+        if self._is_os_nt():
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        process = subprocess.Popen(command_args, startupinfo=startupinfo)
         exitcode = process.wait()
 
         return exitcode
