@@ -56,7 +56,7 @@ class SublimeSyncUploadCommand(sublime_plugin.ApplicationCommand, CommandWithSta
         """
         Starts ansync command
         """
-        self.password = password
+        self.password = password or None
         sublime.set_timeout_async(self.pack_and_send, 0)
 
     def send_to_api(self):
