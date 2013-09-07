@@ -123,7 +123,7 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand, CommandWithS
         # Move pacakges directories to a .bak
         self.set_message(u"Moving directories...")
         archiver = Archiver()
-        #archiver.move_packages_to_backup_dirs()
+        archiver.move_packages_to_backup_dirs()
 
         # Unpack backup
         self.set_message(u"Extracting archive...")
@@ -131,7 +131,7 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand, CommandWithS
 
         # Delete moved directories
         self.set_message(u"Deleting old directories...")
-        #archiver.remove_backup_dirs()
+        archiver.remove_backup_dirs()
 
         self.set_message(u"Your Sublime Text has been synced !")
         self.post_unpack()
