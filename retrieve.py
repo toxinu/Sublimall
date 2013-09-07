@@ -21,6 +21,7 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand, CommandWithS
         super(SublimeSyncRetrieveCommand, self).__init__(*args, **kwargs)
         self.stream = None
         self.running = False
+        self.password = None
         self.archive_filename = None
 
     def post_unpack(self):
@@ -31,6 +32,7 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand, CommandWithS
         os.unlink(self.archive_filename)
         self.stream = None
         self.running = False
+        self.password = None
         self.archive_filename = None
 
     def abort(self):
@@ -69,8 +71,9 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand, CommandWithS
                 self.set_message("Wrong password")
             self.prompt_password()
         else:
+            self.password = password
             self.zf.close()
-            self.unpack(password)
+            sublime.set_timeout_async(self.unpack, 0)
 
     def retrieve_from_server(self):
         """
@@ -111,7 +114,7 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand, CommandWithS
         archiver = Archiver()
         archiver.pack_packages(output_filename=os.path.join(os.path.dirname(__file__), BACKUP_DIRECTORY_NAME, '%s.zip' % time.time()))
 
-    def unpack(self, password=None):
+    def unpack(self):
         """
         Unpack archive
         """
@@ -120,15 +123,15 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand, CommandWithS
         # Move pacakges directories to a .bak
         self.set_message(u"Moving directories...")
         archiver = Archiver()
-        archiver.move_packages_to_backup_dirs()
+        #archiver.move_packages_to_backup_dirs()
 
         # Unpack backup
         self.set_message(u"Extracting archive...")
-        archiver.unpack_packages(self.archive_filename, password=password)
+        archiver.unpack_packages(self.archive_filename, password=self.password)
 
         # Delete moved directories
         self.set_message(u"Deleting old directories...")
-        archiver.remove_backup_dirs()
+        #archiver.remove_backup_dirs()
 
         self.set_message(u"Your Sublime Text has been synced !")
         self.post_unpack()

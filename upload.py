@@ -16,6 +16,7 @@ class SublimeSyncUploadCommand(sublime_plugin.ApplicationCommand, CommandWithSta
     def __init__(self, *args, **kwargs):
         super(SublimeSyncUploadCommand, self).__init__(*args, **kwargs)
         self.running = False
+        self.password = None
         self.archive_filename = None
 
     def post_send(self):
@@ -24,6 +25,7 @@ class SublimeSyncUploadCommand(sublime_plugin.ApplicationCommand, CommandWithSta
         """
         self.unset_message()
         self.running = False
+        self.password = None
         self.archive_filename = None
 
     def prompt_password(self):
@@ -33,12 +35,12 @@ class SublimeSyncUploadCommand(sublime_plugin.ApplicationCommand, CommandWithSta
         sublime.active_window().show_input_panel(
             "Enter archive password",
             initial_text='',
-            on_done=self.pack_and_send,
-            on_cancel=self.pack_and_send,
+            on_done=self.pack_and_send_async,
+            on_cancel=self.pack_and_send_async,
             on_change=None
         )
 
-    def pack_and_send(self, password=None):
+    def pack_and_send(self):
         """
         Create archive and send it to the API
         """
@@ -46,9 +48,16 @@ class SublimeSyncUploadCommand(sublime_plugin.ApplicationCommand, CommandWithSta
 
         archiver = Archiver()
         excluded_dir = os.path.relpath(os.path.dirname(__file__), os.path.join(sublime.packages_path(), os.pardir))
-        self.archive_filename = archiver.pack_packages(password=password, excluded_dir=excluded_dir)
+        self.archive_filename = archiver.pack_packages(password=self.password, excluded_dir=excluded_dir)
 
         self.send_to_api()
+
+    def pack_and_send_async(self, password=None):
+        """
+        Starts ansync command
+        """
+        self.password = password
+        sublime.set_timeout_async(self.pack_and_send, 0)
 
     def send_to_api(self):
         """
@@ -78,10 +87,14 @@ class SublimeSyncUploadCommand(sublime_plugin.ApplicationCommand, CommandWithSta
 
         self.post_send()
 
-    def start(self):
+    def run(self, *args):
         """
         Create an archive of all packages and settings
         """
+        if self.running:
+            self.set_quick_message("Already working on a backup...")
+            return
+
         settings = sublime.load_settings('sublime-sync.sublime-settings')
 
         self.running = True
@@ -92,10 +105,4 @@ class SublimeSyncUploadCommand(sublime_plugin.ApplicationCommand, CommandWithSta
         if self.encrypt:
             self.prompt_password()
         else:
-            self.pack_and_send()
-
-    def run(self, *args):
-        if self.running:
-            self.set_quick_message("Already working on a backup...")
-            return
-        sublime.set_timeout_async(self.start, 0)
+            self.pack_and_send_async()
