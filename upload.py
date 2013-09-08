@@ -85,6 +85,9 @@ class SublimeSyncUploadCommand(sublime_plugin.ApplicationCommand, CommandWithSta
         elif response.status_code == 403:
             self.set_message("Error while sending archive: wrong credentials")
 
+        elif response.status_code == 413:
+            self.set_message("Error while sending archive: filesize too large (>10MB)")
+
         self.post_send()
 
     def run(self, *args):
