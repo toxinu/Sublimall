@@ -116,7 +116,7 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand, CommandWithS
         Creates a backup of Packages and Installed Packages before unpacking
         """
         archiver = Archiver()
-        archiver.pack_packages(output_filename=os.path.join(os.path.dirname(__file__), BACKUP_DIRECTORY_NAME, '%s.zip' % time.time()))
+        archiver.pack_packages(output_filename=os.path.join(os.path.dirname(__file__), BACKUP_DIRECTORY_NAME, '%s.zip' % time.time()), backup=True)
 
     def unpack(self):
         """
