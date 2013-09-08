@@ -51,7 +51,7 @@ class Archiver(object):
         """
         Returns the default output directory
         """
-        return os.path.join(list(self.directory_list)[0], os.pardir)  # Assuming Packages and Installed Packages are in the same directory !
+        return os.path.abspath(os.path.join(list(self.directory_list)[0], os.path.pardir))  # Assuming Packages and Installed Packages are in the same directory !
 
     def _run_executable(self, command, password=None, **kwargs):
         """
