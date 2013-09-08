@@ -28,6 +28,13 @@ class Archiver(object):
         if os.path.exists(directory):
             shutil.rmtree(directory)
 
+    def _safe_move(self, source, destination):
+        """
+        Safely moves the source to the destination
+        """
+        if os.path.exists(source):
+            shutil.move(source, destination)
+
     def _is_os_nt(self):
         """
         Returns whether current os is Windows or not
@@ -99,9 +106,9 @@ class Archiver(object):
         self_package_directory = os.path.split(os.path.dirname(__file__))[1]
         for directory in next(os.walk(sublime.packages_path()))[1]:
             if directory != self_package_directory:
-                shutil.move(os.path.join(sublime.packages_path(), directory), self.packages_bak_path)
+                self._safe_move(os.path.join(sublime.packages_path(), directory), self.packages_bak_path)
 
-        shutil.move(sublime.installed_packages_path(), self.installed_packages_bak_path)
+        self._safe_move(sublime.installed_packages_path(), self.installed_packages_bak_path)
 
     def remove_backup_dirs(self):
         """
