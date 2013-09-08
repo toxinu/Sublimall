@@ -87,8 +87,9 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand, CommandWithS
 
         self.set_message("Requesting archive...")
         response = requests.post(url=API_RETRIEVE_URL, data=data, stream=True)
+        status_code = response.status_code
 
-        if response.status_code == 200:
+        if status_code == 200:
             self.set_message(u"Downloading archive...")
 
             # Create a temporary file and write response content in it
@@ -101,11 +102,13 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand, CommandWithS
             self.zf = zipfile.ZipFile(self.archive_filename, 'r')
             self.check_zipfile(first_try=True)
 
-        elif response.status_code == 403:
-            self.set_message("Error while requesting archive: wrong credentials")
+        else:
+            if status_code == 403:
+                self.set_message("Error while requesting archive: wrong credentials")
+            elif status_code == 404:
+                self.set_message("Error while requesting archive: version %s not found on remote" % sublime.version())
 
-        elif response.status_code == 404:
-            self.set_message("Error while requesting archive: version %s not found on remote" % sublime.version())
+            self.running = False
 
     def backup(self):
         """
