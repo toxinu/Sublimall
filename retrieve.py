@@ -108,6 +108,7 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand, CommandWithS
             elif status_code == 404:
                 self.set_message("Error while requesting archive: version %s not found on remote" % sublime.version())
 
+            self.unset_message()
             self.running = False
 
     def backup(self):
