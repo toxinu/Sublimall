@@ -14,10 +14,10 @@ class Archiver(object):
         """
         Stores sublime packages paths
         """
-        self.directory_list = [
-            sublime.packages_path(),
-            sublime.installed_packages_path()
-        ]
+        self.directory_list = {
+            sublime.packages_path(): '',
+            sublime.installed_packages_path(): '.sublime-package'
+        }
         self.packages_bak_path = '%s.bak' % sublime.packages_path()
         self.installed_packages_bak_path = '%s.bak' % sublime.installed_packages_path()
 
@@ -38,7 +38,13 @@ class Archiver(object):
         """
         Returns absolute 7za executable path
         """
-        return os.path.join(os.path.dirname(os.path.realpath(__file__)), '7z', '7za' if not self._is_os_nt() else '7za.exe')
+        return shutil.which('7za') or os.path.join(os.path.dirname(os.path.realpath(__file__)), '7z', '7za' if not self._is_os_nt() else '7za.exe')
+
+    def _get_output_dir(self):
+        """
+        Returns the default output directory
+        """
+        return os.path.join(self.directory_list.keys()[0], os.pardir)  # Assuming Packages and Installed Packages are in the same directory !
 
     def _run_executable(self, command, password=None, **kwargs):
         """
@@ -51,10 +57,10 @@ class Archiver(object):
             command_args = [self._get_7za_executable(), command, '-tzip', '-y']
             if password is not None:
                 command_args.append('-p%s' % password)
-            if 'excluded_dir' in kwargs:
-                command_args.append('-xr!%s*' % kwargs['excluded_dir'])
+            if 'excluded_dirs' in kwargs:
+                command_args.extend(['-xr!%s*' % excluded_dir for excluded_dir in kwargs['excluded_dirs']])
             command_args.append(kwargs['output_filename'])
-            command_args.extend(self.directory_list)
+            command_args.extend(self.directory_list.keys())
 
         elif command == 'x':  # Unpack archive
             assert all(k in kwargs for k in ['input_file', 'output_dir'])
@@ -72,6 +78,14 @@ class Archiver(object):
         exitcode = process.wait()
 
         return exitcode
+
+    def _excludes_from_package_control(self):
+        """
+        Returns a list of files / directories that Package Control handles
+        """
+        pc_settings = sublime.load_settings('Package Control.sublime-settings')
+        installed_packages = pc_settings.get('installed_packages', [])
+        return ['%s%s' % (os.path.join(os.path.split(directory)[1], package_name), suffix) for package_name in installed_packages for directory, suffix in self.directory_list.items()]
 
     def move_packages_to_backup_dirs(self):
         """
@@ -100,6 +114,11 @@ class Archiver(object):
         """
         Compresses Packages and Installed Packages
         """
+        # Add Package Control excludes
+        excluded_dirs = kwargs.get('excluded_dirs', [])
+        excluded_dirs.extend(self._excludes_from_package_control())
+        kwargs['excluded_dirs'] = excluded_dirs
+
         # Generate a temporary output filename if necessary
         if 'output_filename' not in kwargs:
             kwargs['output_filename'] = generate_temp_filename()
@@ -111,5 +130,5 @@ class Archiver(object):
         Uncompresses Packages and Installed Packages
         """
         if output_dir is None:
-            output_dir = os.path.join(self.directory_list[0], os.pardir)
+            output_dir = self._get_output_dir()
         self._run_executable('x', password=password, input_file=input_file, output_dir=output_dir)

@@ -48,7 +48,7 @@ class SublimeSyncUploadCommand(sublime_plugin.ApplicationCommand, CommandWithSta
 
         archiver = Archiver()
         excluded_dir = os.path.relpath(os.path.dirname(__file__), os.path.join(sublime.packages_path(), os.pardir))
-        self.archive_filename = archiver.pack_packages(password=self.password, excluded_dir=excluded_dir)
+        self.archive_filename = archiver.pack_packages(password=self.password, excluded_dirs=[excluded_dir])
 
         self.send_to_api()
 
