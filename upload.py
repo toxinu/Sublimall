@@ -74,18 +74,22 @@ class SublimeSyncUploadCommand(sublime_plugin.ApplicationCommand, CommandWithSta
 
         # Send data and delete temporary file
         response = requests.post(url=API_UPLOAD_URL, files=files)
+        status_code = response.status_code
 
         f.close()
         os.unlink(self.archive_filename)
 
-        if response.status_code == 200:
+        if status_code == 200:
             self.set_message("Successfuly sent archive")
 
-        elif response.status_code == 403:
+        elif status_code == 403:
             self.set_message("Error while sending archive: wrong credentials")
 
-        elif response.status_code == 413:
+        elif status_code == 413:
             self.set_message("Error while sending archive: filesize too large (>10MB)")
+
+        else:
+            self.set_message("Unexpected error (HTTP STATUS: %s)" % response.status_code)
 
         self.post_send()
 

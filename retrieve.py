@@ -24,6 +24,14 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand, CommandWithS
         self.password = None
         self.archive_filename = None
 
+    def _package_control_has_packages(self):
+        """
+        Returns whether Package Control is installed or not
+        """
+        pc_settings = sublime.load_settings('Package Control.sublime-settings')
+        installed_packages = pc_settings.get('installed_packages', [])
+        return bool(installed_packages)
+
     def post_unpack(self):
         """
         Resets values
@@ -107,6 +115,8 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand, CommandWithS
                 self.set_message("Error while requesting archive: wrong credentials")
             elif status_code == 404:
                 self.set_message("Error while requesting archive: version %s not found on remote" % sublime.version())
+            else:
+                self.set_message("Unexpected error (HTTP STATUS: %s)" % status_code)
 
             self.unset_message()
             self.running = False
@@ -138,6 +148,14 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand, CommandWithS
         archiver.remove_backup_dirs()
 
         self.set_message(u"Your Sublime Text has been synced !")
+
+        if self._package_control_has_packages():
+            message_lines = [
+                "Package Control has been detected.",
+                "You will have to restart TWICE".
+            ]
+            sublime.message_dialog('\n'.join(message_lines))
+
         self.post_unpack()
 
     def start(self):
