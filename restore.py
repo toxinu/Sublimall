@@ -36,7 +36,7 @@ class SublimeSyncRestore(sublime_plugin.ApplicationCommand, CommandWithStatus):
             self.set_message(u"Deleting old directories...")
             archiver.remove_backup_dirs()
 
-            self.set_message(u"Yout Sublime Text has been restored !")
+            self.set_message(u"Your Sublime Text has been restored !")
             self.unset_message()
             self.running = False
 
