@@ -152,9 +152,15 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand, CommandWithS
         if self._package_control_has_packages():
             message_lines = [
                 "Package Control has been detected.",
-                "You will have to restart TWICE".
+                "If your configuration is not yet fully loaded, please restart Sublime Text and wait for Package Control to install missing packages.",
+                "You might have to restart Sublime another time if themes are not correctly loaded."
             ]
-            sublime.message_dialog('\n'.join(message_lines))
+        else:
+            message_lines = [
+                "Sync done.",
+                "Please restart Sublime Text if your configuration is not fully loaded.",
+            ]
+        sublime.message_dialog('\n'.join(message_lines))
 
         self.post_unpack()
 

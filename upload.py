@@ -47,7 +47,7 @@ class SublimeSyncUploadCommand(sublime_plugin.ApplicationCommand, CommandWithSta
         self.set_message("Creating archive...")
 
         archiver = Archiver()
-        self.archive_filename = archiver.pack_packages(password=self.password)
+        self.archive_filename = archiver.pack_packages(password=self.password, exclude_from_package_control=self.exclude_from_package_control)
 
         self.send_to_api()
 
@@ -106,6 +106,7 @@ class SublimeSyncUploadCommand(sublime_plugin.ApplicationCommand, CommandWithSta
         self.running = True
         self.username = settings.get('username', '')
         self.api_key = settings.get('api_key', '')
+        self.exclude_from_package_control = settings.get('exclude_from_package_control', False)
         self.encrypt = settings.get('encrypt', False)
 
         if self.encrypt:

@@ -121,7 +121,7 @@ class Archiver(object):
         for directory in [self.packages_bak_path, self.installed_packages_bak_path]:
             self._safe_rmtree(directory)
 
-    def pack_packages(self, password=None, backup=False, **kwargs):
+    def pack_packages(self, password=None, backup=False, exclude_from_package_control=True, **kwargs):
         """
         Compresses Packages and Installed Packages
         """
@@ -131,7 +131,7 @@ class Archiver(object):
         excluded_dirs.append(os.path.relpath(os.path.dirname(__file__), os.path.join(sublime.packages_path(), os.pardir)))
 
         # Add Package Control excludes
-        if not backup:
+        if exclude_from_package_control and not backup:
             excluded_dirs.extend(self._excludes_from_package_control())
 
         kwargs['excluded_dirs'] = excluded_dirs
