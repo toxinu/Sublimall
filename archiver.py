@@ -65,7 +65,7 @@ class Archiver(object):
             if password is not None:
                 command_args.append('-p%s' % password)
             if 'excluded_dirs' in kwargs:
-                command_args.extend(['-xr!%s*' % excluded_dir for excluded_dir in kwargs['excluded_dirs']])
+                command_args.extend(['-x!%s*' % excluded_dir for excluded_dir in kwargs['excluded_dirs']])
             command_args.append(kwargs['output_filename'])
             command_args.extend(self.directory_list.keys())
 
@@ -92,7 +92,11 @@ class Archiver(object):
         """
         pc_settings = sublime.load_settings('Package Control.sublime-settings')
         installed_packages = pc_settings.get('installed_packages', [])
-        return ['%s%s' % (os.path.join(os.path.split(directory)[1], package_name), suffix) for package_name in installed_packages for directory, suffix in self.directory_list.items()]
+        return [
+            '%s%s' % (os.path.join(os.path.split(directory)[1], package_name), suffix)
+            for package_name in installed_packages if package_name.lower() != 'package control'
+            for directory, suffix in self.directory_list.items()
+        ]
 
     def move_packages_to_backup_dirs(self):
         """
