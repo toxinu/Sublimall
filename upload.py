@@ -47,7 +47,9 @@ class SublimeSyncUploadCommand(sublime_plugin.ApplicationCommand, CommandWithSta
         self.set_message("Creating archive...")
 
         archiver = Archiver()
-        self.archive_filename = archiver.pack_packages(password=self.password, exclude_from_package_control=self.exclude_from_package_control)
+        self.archive_filename = archiver.pack_packages(
+            password=self.password,
+            exclude_from_package_control=self.exclude_from_package_control)
 
         self.send_to_api()
 
@@ -68,28 +70,41 @@ class SublimeSyncUploadCommand(sublime_plugin.ApplicationCommand, CommandWithSta
         files = {
             'package': f.read(),
             'version': sublime.version()[:1],
+            'platform': sublime.platform(),
+            'arch': sublime.arch(),
             'username': self.username,
             'api_key': self.api_key,
         }
 
         # Send data and delete temporary file
-        response = requests.post(url=API_UPLOAD_URL, files=files)
+        try:
+            response = requests.post(url=API_UPLOAD_URL, files=files, timeout=10)
+        except requests.exceptions.ConnectionError:
+            self.set_timed_message(
+                "Error while sending archive: server not available, try later",
+                clear=True)
+            self.running = False
+            return
         status_code = response.status_code
 
         f.close()
         os.unlink(self.archive_filename)
 
         if status_code == 200:
-            self.set_message("Successfuly sent archive")
+            self.set_timed_message("Successfully sent archive", clear=True)
 
         elif status_code == 403:
-            self.set_message("Error while sending archive: wrong credentials")
+            self.set_timed_message(
+                "Error while sending archive: wrong credentials", clear=True)
 
         elif status_code == 413:
-            self.set_message("Error while sending archive: filesize too large (>10MB)")
+            self.set_timed_message(
+                "Error while sending archive: filesize too large (>20MB)", clear=True)
 
         else:
-            self.set_message("Unexpected error (HTTP STATUS: %s)" % response.status_code)
+            self.set_timed_message(
+                "Unexpected error (HTTP STATUS: %s)" % response.status_code, clear=True)
+            open('/home/socketubs/output.html', 'w').write(response.text)
 
         self.post_send()
 
@@ -98,7 +113,7 @@ class SublimeSyncUploadCommand(sublime_plugin.ApplicationCommand, CommandWithSta
         Create an archive of all packages and settings
         """
         if self.running:
-            self.set_quick_message("Already working on a backup...")
+            self.set_timed_message("Already working on a backup...")
             return
 
         settings = sublime.load_settings('sublime-sync.sublime-settings')
@@ -106,7 +121,8 @@ class SublimeSyncUploadCommand(sublime_plugin.ApplicationCommand, CommandWithSta
         self.running = True
         self.username = settings.get('username', '')
         self.api_key = settings.get('api_key', '')
-        self.exclude_from_package_control = settings.get('exclude_from_package_control', False)
+        self.exclude_from_package_control = settings.get(
+            'exclude_from_package_control', False)
         self.encrypt = settings.get('encrypt', False)
 
         if self.encrypt:
