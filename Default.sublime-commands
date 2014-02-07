@@ -1,14 +1,14 @@
 [
     {
         "command": "sublime_sync_upload",
-        "caption": "Sync: Upload to server"
+        "caption": "SublimeSync: Upload to server"
     },
     {
         "command": "sublime_sync_retrieve",
-        "caption": "Sync: Retrieve from server"
+        "caption": "SublimeSync: Retrieve from server"
     },
     {
         "command": "sublime_sync_restore",
-        "caption": "Sync: Restore"
+        "caption": "SublimeSync: Restore"
     }
 ]
