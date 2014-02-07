@@ -51,7 +51,8 @@ class Archiver(object):
         """
         Returns the default output directory
         """
-        return os.path.abspath(os.path.join(list(self.directory_list)[0], os.path.pardir))  # Assuming Packages and Installed Packages are in the same directory !
+        # Assuming Packages and Installed Packages are in the same directory !
+        return os.path.abspath(os.path.join(list(self.directory_list)[0], os.path.pardir))
 
     def _run_executable(self, command, password=None, **kwargs):
         """
@@ -110,9 +111,12 @@ class Archiver(object):
         self_package_directory = os.path.split(os.path.dirname(__file__))[1]
         for directory in next(os.walk(sublime.packages_path()))[1]:
             if directory != self_package_directory:
-                self._safe_move(os.path.join(sublime.packages_path(), directory), self.packages_bak_path)
+                self._safe_move(
+                    os.path.join(sublime.packages_path(), directory),
+                    self.packages_bak_path)
 
-        self._safe_move(sublime.installed_packages_path(), self.installed_packages_bak_path)
+        self._safe_move(
+            sublime.installed_packages_path(), self.installed_packages_bak_path)
 
     def remove_backup_dirs(self):
         """
@@ -121,14 +125,22 @@ class Archiver(object):
         for directory in [self.packages_bak_path, self.installed_packages_bak_path]:
             self._safe_rmtree(directory)
 
-    def pack_packages(self, password=None, backup=False, exclude_from_package_control=True, **kwargs):
+    def pack_packages(
+            self,
+            password=None,
+            backup=False,
+            exclude_from_package_control=True,
+            **kwargs):
         """
         Compresses Packages and Installed Packages
         """
         excluded_dirs = kwargs.get('excluded_dirs', [])
 
         # Append sublime-sync to excluded dirs
-        excluded_dirs.append(os.path.relpath(os.path.dirname(__file__), os.path.join(sublime.packages_path(), os.pardir)))
+        excluded_dirs.append(
+            os.path.relpath(
+                os.path.dirname(__file__),
+                os.path.join(sublime.packages_path(), os.pardir)))
 
         # Add Package Control excludes
         if exclude_from_package_control and not backup:
@@ -148,4 +160,5 @@ class Archiver(object):
         """
         if output_dir is None:
             output_dir = self._get_output_dir()
-        self._run_executable('x', password=password, input_file=input_file, output_dir=output_dir)
+        self._run_executable(
+            'x', password=password, input_file=input_file, output_dir=output_dir)
