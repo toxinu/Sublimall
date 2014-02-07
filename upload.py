@@ -3,6 +3,7 @@ import os
 import sys
 import sublime
 import sublime_plugin
+
 from .archiver import Archiver
 from .settings import API_UPLOAD_URL
 from .command import CommandWithStatus
@@ -72,7 +73,7 @@ class SublimeSyncUploadCommand(sublime_plugin.ApplicationCommand, CommandWithSta
             'version': sublime.version()[:1],
             'platform': sublime.platform(),
             'arch': sublime.arch(),
-            'username': self.username,
+            'email': self.email,
             'api_key': self.api_key,
         }
 
@@ -119,7 +120,7 @@ class SublimeSyncUploadCommand(sublime_plugin.ApplicationCommand, CommandWithSta
         settings = sublime.load_settings('sublime-sync.sublime-settings')
 
         self.running = True
-        self.username = settings.get('username', '')
+        self.email = settings.get('email', '')
         self.api_key = settings.get('api_key', '')
         self.exclude_from_package_control = settings.get(
             'exclude_from_package_control', False)

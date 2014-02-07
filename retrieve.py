@@ -89,7 +89,7 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand, CommandWithS
         """
         data = {
             'version': sublime.version()[:1],
-            'username': self.username,
+            'email': self.email,
             'api_key': self.api_key,
         }
 
@@ -172,7 +172,7 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand, CommandWithS
 
         settings = sublime.load_settings('sublime-sync.sublime-settings')
 
-        self.username = settings.get('username', '')
+        self.email = settings.get('email', '')
         self.api_key = settings.get('api_key', '')
 
         self.retrieve_from_server()
