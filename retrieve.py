@@ -179,6 +179,6 @@ class SublimeSyncRetrieveCommand(sublime_plugin.ApplicationCommand, CommandWithS
 
     def run(self, *args):
         if self.running:
-            self.set_quick_message("Already working on a backup...")
+            self.set_timed_message("Already working on a backup...")
             return
         sublime.set_timeout_async(self.start, 0)

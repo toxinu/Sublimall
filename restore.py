@@ -77,6 +77,6 @@ class SublimeSyncRestore(sublime_plugin.ApplicationCommand, CommandWithStatus):
 
     def run(self, *args):
         if self.running:
-            self.set_quick_message("Already working on a restore...")
+            self.set_timed_message("Already working on a restore...")
             return
         sublime.set_timeout_async(self.start, 0)
