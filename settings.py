@@ -1,8 +1,20 @@
 # -*- coding:utf-8 -*-
 import os
+import sys
 import logging
+import sublime
+import sublime_plugin
 from os.path import expanduser
 from urllib.parse import urljoin
+
+
+if sys.version_info[0] == 2:
+    msg = "Sublimall is only available for SublimeText 3 (for now).\n Sorry about that."
+    sublime.message_dialog(msg)
+    for name, module in sys.modules.items():
+        if name.startswith('sublimall'):
+            sublime_plugin.unload_module(module)
+
 
 logger = logging.getLogger('sublimall')
 if not logger.handlers:
