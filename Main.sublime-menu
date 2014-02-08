@@ -12,33 +12,33 @@
                 "children":
                 [
                     {
-                        "caption": "SublimeSync",
+                        "caption": "Sublimall",
                         "children":
                         [
                             {
                                 "command": "open_file",
-                                "args": {"file": "${packages}/sublime-sync/sublime-sync.sublime-settings"},
+                                "args": {"file": "${packages}/Sublimall/Sublimall.sublime-settings"},
                                 "caption": "Settings – Default"
                             },
                             {
                                 "command": "open_file",
-                                "args": {"file": "${packages}/User/sublime-sync.sublime-settings"},
+                                "args": {"file": "${packages}/User/Sublimall.sublime-settings"},
                                 "caption": "Settings – User"
                             },
                             {
                                 "caption": "-"
                             },
                             {
-                                "command": "sublime_sync_upload",
-                                "caption": "Upload to server"
+                                "command": "sublimall_upload",
+                                "caption": "Upload"
                             },
                             {
-                                "command": "sublime_sync_retrieve",
-                                "caption": "Retrieve from server"
+                                "command": "sublimall_retrieve",
+                                "caption": "Retrieve"
                             },
                             {
-                                "command": "sublime_sync_restore",
-                                "caption": "Restore"
+                                "command": "sublimall_restore",
+                                "caption": "Restore backup"
                             }
                         ]
                     }

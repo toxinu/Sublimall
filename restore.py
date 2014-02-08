@@ -8,10 +8,10 @@ from .command import CommandWithStatus
 from .settings import BACKUP_DIRECTORY_NAME
 
 
-class SublimeSyncRestore(sublime_plugin.ApplicationCommand, CommandWithStatus):
+class SublimallRestore(sublime_plugin.ApplicationCommand, CommandWithStatus):
 
     def __init__(self, *args, **kwargs):
-        super(SublimeSyncRestore, self).__init__(*args, **kwargs)
+        super(SublimallRestore, self).__init__(*args, **kwargs)
         self.running = False
         self.backups = []
         self.backup_path = os.path.join(os.path.dirname(__file__), BACKUP_DIRECTORY_NAME)

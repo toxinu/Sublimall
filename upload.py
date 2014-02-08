@@ -12,10 +12,10 @@ sys.path.append(os.path.dirname(__file__))
 import requests
 
 
-class SublimeSyncUploadCommand(sublime_plugin.ApplicationCommand, CommandWithStatus):
+class SublimallUploadCommand(sublime_plugin.ApplicationCommand, CommandWithStatus):
 
     def __init__(self, *args, **kwargs):
-        super(SublimeSyncUploadCommand, self).__init__(*args, **kwargs)
+        super(SublimallUploadCommand, self).__init__(*args, **kwargs)
         self.running = False
         self.password = None
         self.archive_filename = None
