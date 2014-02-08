@@ -5,6 +5,7 @@ import sublime
 import sublime_plugin
 
 from .archiver import Archiver
+from .settings import logger
 from .settings import API_UPLOAD_URL
 from .command import CommandWithStatus
 
@@ -33,6 +34,7 @@ class SublimallUploadCommand(sublime_plugin.ApplicationCommand, CommandWithStatu
         """
         Shows an input panel for entering password
         """
+        logger.info('Prompt archive passphrase')
         sublime.active_window().show_input_panel(
             "Enter archive password",
             initial_text='',
@@ -79,33 +81,38 @@ class SublimallUploadCommand(sublime_plugin.ApplicationCommand, CommandWithStatu
 
         # Send data and delete temporary file
         try:
-            response = requests.post(url=API_UPLOAD_URL, files=files, timeout=10)
-        except requests.exceptions.ConnectionError:
+            r = requests.post(url=API_UPLOAD_URL, files=files, timeout=10)
+        except requests.exceptions.ConnectionError as err:
             self.set_timed_message(
                 "Error while sending archive: server not available, try later",
                 clear=True)
             self.running = False
+            logger.error(
+                'Server (%s) not available, try later.\n'
+                '==========[EXCEPTION]==========\n'
+                '%s\n'
+                '===============================' % (API_UPLOAD_URL, err))
             return
-        status_code = response.status_code
 
         f.close()
         os.unlink(self.archive_filename)
 
-        if status_code == 201:
+        if r.status_code == 201:
             self.set_timed_message("Successfully sent archive", clear=True)
+            logger.info('HTTP [%s] Successfully sent archive' % r.status_code)
 
-        elif status_code == 403:
+        elif r.status_code == 403:
             self.set_timed_message(
                 "Error while sending archive: wrong credentials", clear=True)
-
-        elif status_code == 413:
+            logger.info('HTTP [%s] Bad credentials' % r.status_code)
+        elif r.status_code == 413:
             self.set_timed_message(
                 "Error while sending archive: filesize too large (>20MB)", clear=True)
-
+            logger.error("HTTP [%s] %s" (r.status_code, r.content))
         else:
             self.set_timed_message(
-                "Unexpected error (HTTP STATUS: %s)" % response.status_code, clear=True)
-            open('/home/socketubs/output.html', 'w').write(response.text)
+                "Unexpected error (HTTP STATUS: %s)" % r.status_code, clear=True)
+            logger.error('HTTP [%s] %s' % (r.status_code, r.content))
 
         self.post_send()
 
@@ -115,9 +122,12 @@ class SublimallUploadCommand(sublime_plugin.ApplicationCommand, CommandWithStatu
         """
         if self.running:
             self.set_timed_message("Already working on a backup...")
+            logger.warn('Already working on a backup')
             return
 
-        settings = sublime.load_settings('sublime-sync.sublime-settings')
+        logger.info('Starting upload')
+
+        settings = sublime.load_settings('Sublimall.sublime-settings')
 
         self.running = True
         self.email = settings.get('email', '')
@@ -126,6 +136,7 @@ class SublimallUploadCommand(sublime_plugin.ApplicationCommand, CommandWithStatu
             'exclude_from_package_control', False)
         self.encrypt = settings.get('encrypt', False)
 
+        logger.info('Encrypt enabled')
         if self.encrypt:
             self.prompt_password()
         else:

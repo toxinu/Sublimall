@@ -3,6 +3,7 @@ import os
 import shutil
 import sublime
 import subprocess
+from .settings import logger
 from .utils import generate_temp_filename
 
 
@@ -82,6 +83,7 @@ class Archiver(object):
         if self._is_os_nt():
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        logger.info('Run command: %s' % command_args)
         process = subprocess.Popen(command_args, startupinfo=startupinfo)
         exitcode = process.wait()
 
@@ -105,16 +107,22 @@ class Archiver(object):
         """
         self.remove_backup_dirs()
 
-        # Packages directory requires a little bit of filtering to exlude sublime-sync
+        # Packages directory requires a little bit of filtering to exlude sublimall
         os.makedirs(self.packages_bak_path)
+        logger.info('Create new package bak dir: %s' % self.packages_bak_path)
 
         self_package_directory = os.path.split(os.path.dirname(__file__))[1]
         for directory in next(os.walk(sublime.packages_path()))[1]:
             if directory != self_package_directory:
+                logger.info('Move %s package to %s' % (
+                    os.path.join(sublime.packages_path(), directory),
+                    self.packages_bak_path))
                 self._safe_move(
                     os.path.join(sublime.packages_path(), directory),
                     self.packages_bak_path)
 
+        logger.info('Move %s to %s' % (
+            sublime.installed_packages_path(), self.installed_packages_bak_path))
         self._safe_move(
             sublime.installed_packages_path(), self.installed_packages_bak_path)
 
@@ -123,6 +131,7 @@ class Archiver(object):
         Removes packages backups directories
         """
         for directory in [self.packages_bak_path, self.installed_packages_bak_path]:
+            logger.info('Remove old backup dir: %s' % directory)
             self._safe_rmtree(directory)
 
     def pack_packages(
@@ -136,7 +145,7 @@ class Archiver(object):
         """
         excluded_dirs = kwargs.get('excluded_dirs', [])
 
-        # Append sublime-sync to excluded dirs
+        # Append sublimall to excluded dirs
         excluded_dirs.append(
             os.path.relpath(
                 os.path.dirname(__file__),
