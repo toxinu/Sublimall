@@ -91,7 +91,7 @@ class SublimeSyncUploadCommand(sublime_plugin.ApplicationCommand, CommandWithSta
         f.close()
         os.unlink(self.archive_filename)
 
-        if status_code == 200:
+        if status_code == 201:
             self.set_timed_message("Successfully sent archive", clear=True)
 
         elif status_code == 403:
