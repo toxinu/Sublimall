@@ -13,7 +13,14 @@ Install
 
 Let's visit [doc](http://sublimall.socketubs.org/docs) page.
 
+Report a bug
+============
+
+Take a look at your ``~/.sublimall.org`` file and post an issue.
+
 License
 =======
 
-License is coming.
+MIT License.
+
+Thanks to [Florian Paquet](https://github.com/florianpaquet) initial work on this plugin.
