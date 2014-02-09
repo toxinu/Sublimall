@@ -36,7 +36,7 @@ class SublimallUploadCommand(sublime_plugin.ApplicationCommand, CommandWithStatu
         """
         logger.info('Prompt archive passphrase')
         sublime.active_window().show_input_panel(
-            "Enter archive password",
+            "Enter archive passphrase",
             initial_text='',
             on_done=self.pack_and_send_async,
             on_cancel=self.pack_and_send_async,
@@ -81,7 +81,7 @@ class SublimallUploadCommand(sublime_plugin.ApplicationCommand, CommandWithStatu
 
         # Send data and delete temporary file
         try:
-            r = requests.post(url=API_UPLOAD_URL, files=files, timeout=10)
+            r = requests.post(url=API_UPLOAD_URL, files=files, timeout=50)
         except requests.exceptions.ConnectionError as err:
             self.set_timed_message(
                 "Error while sending archive: server not available, try later",
@@ -100,7 +100,6 @@ class SublimallUploadCommand(sublime_plugin.ApplicationCommand, CommandWithStatu
         if r.status_code == 201:
             self.set_timed_message("Successfully sent archive", clear=True)
             logger.info('HTTP [%s] Successfully sent archive' % r.status_code)
-
         elif r.status_code == 403:
             self.set_timed_message(
                 "Error while sending archive: wrong credentials", clear=True)
@@ -108,7 +107,7 @@ class SublimallUploadCommand(sublime_plugin.ApplicationCommand, CommandWithStatu
         elif r.status_code == 413:
             self.set_timed_message(
                 "Error while sending archive: filesize too large (>20MB)", clear=True)
-            logger.error("HTTP [%s] %s" (r.status_code, r.content))
+            logger.error("HTTP [%s] %s" % (r.status_code, r.content))
         else:
             self.set_timed_message(
                 "Unexpected error (HTTP STATUS: %s)" % r.status_code, clear=True)
@@ -129,12 +128,18 @@ class SublimallUploadCommand(sublime_plugin.ApplicationCommand, CommandWithStatu
 
         settings = sublime.load_settings('Sublimall.sublime-settings')
 
-        self.running = True
-        self.email = settings.get('email', '')
-        self.api_key = settings.get('api_key', '')
+        self.email = settings.get('email')
+        self.api_key = settings.get('api_key')
         self.exclude_from_package_control = settings.get(
             'exclude_from_package_control', False)
         self.encrypt = settings.get('encrypt', False)
+
+        if not self.email or not self.api_key:
+            self.set_timed_message("api_key or email is missing in your Sublimall configuration", clear=True)
+            logger.warn('API key or email is missing in configuration file. Abort')
+            return
+
+        self.running = True
 
         logger.info('Encrypt enabled')
         if self.encrypt:

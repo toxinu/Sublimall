@@ -1,6 +1,10 @@
 {
     "email": "",
     "api_key": "",
+    // Set true if you want to exclude packages managed by Package Control
     "exclude_from_package_control": false,
-    "encrypt": true
+    // Set false if you don't want to encrypt your configuration
+    "encrypt": true,
+    // Upload timeout in seconds
+    "http_upload_timeout": 60
 }

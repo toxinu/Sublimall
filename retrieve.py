@@ -101,7 +101,7 @@ class SublimallRetrieveCommand(sublime_plugin.ApplicationCommand, CommandWithSta
 
         self.set_message("Requesting archive...")
         try:
-            r = requests.post(url=API_RETRIEVE_URL, data=data, stream=True, timeout=10)
+            r = requests.post(url=API_RETRIEVE_URL, data=data, stream=True, timeout=self.settings.get('http_upload_timeout'))
         except requests.exceptions.ConnectionError as err:
             self.set_timed_message(
                 "Error while retrieving archive: server not available, try later",
@@ -142,7 +142,7 @@ class SublimallRetrieveCommand(sublime_plugin.ApplicationCommand, CommandWithSta
         else:
             self.set_timed_message(
                 "Unexpected error (HTTP STATUS: %s)" % r.status_code, clear=True)
-            logger.error("HTTP [%s] %s" (r.status_code, r.content))
+            logger.error("HTTP [%s] %s" % (r.status_code, r.content))
 
         self.running = False
 
@@ -208,10 +208,10 @@ class SublimallRetrieveCommand(sublime_plugin.ApplicationCommand, CommandWithSta
         """
         self.running = True
 
-        settings = sublime.load_settings('Sublimall.sublime-settings')
+        self.settings = sublime.load_settings('Sublimall.sublime-settings')
 
-        self.email = settings.get('email', '')
-        self.api_key = settings.get('api_key', '')
+        self.email = self.settings.get('email', '')
+        self.api_key = self.settings.get('api_key', '')
 
         self.retrieve_from_server()
 
