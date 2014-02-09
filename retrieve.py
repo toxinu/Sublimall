@@ -15,7 +15,7 @@ from .settings import BACKUP_DIRECTORY_NAME
 from .utils import generate_temp_filename
 
 sys.path.append(os.path.dirname(__file__))
-import requests
+from . import requests
 
 
 class SublimallRetrieveCommand(sublime_plugin.ApplicationCommand, CommandWithStatus):

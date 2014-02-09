@@ -10,7 +10,7 @@ from .settings import API_UPLOAD_URL
 from .command import CommandWithStatus
 
 sys.path.append(os.path.dirname(__file__))
-import requests
+from . import requests
 
 
 class SublimallUploadCommand(sublime_plugin.ApplicationCommand, CommandWithStatus):
