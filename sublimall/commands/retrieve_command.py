@@ -1,27 +1,26 @@
 # -*- coding:utf-8 -*-
 import os
-import sys
 import time
 import shutil
 import sublime
 import zipfile
-import sublime_plugin
 
-from .archiver import Archiver
+from urllib.parse import urljoin
+from sublime_plugin import ApplicationCommand
+
 from .command import CommandWithStatus
-from .settings import logger
-from .settings import API_RETRIEVE_URL
-from .settings import BACKUP_DIRECTORY_NAME
-from .utils import generate_temp_filename
 
-sys.path.append(os.path.dirname(__file__))
-from . import requests
+from ..logger import logger
+from ..archiver import Archiver
+from ..utils import generate_temp_filename
+from .. import requests
+from .. import SETTINGS_USER_FILE
 
 
-class SublimallRetrieveCommand(sublime_plugin.ApplicationCommand, CommandWithStatus):
+class RetrieveCommand(ApplicationCommand, CommandWithStatus):
 
     def __init__(self, *args, **kwargs):
-        super(SublimallRetrieveCommand, self).__init__(*args, **kwargs)
+        super(RetrieveCommand, self).__init__(*args, **kwargs)
         self.stream = None
         self.running = False
         self.password = None
@@ -74,6 +73,7 @@ class SublimallRetrieveCommand(sublime_plugin.ApplicationCommand, CommandWithSta
         # Try opening the zipfile to check password
         try:
             if password is not None:
+                self.set_message("Trying to decrypt your archive. Please wait.")
                 self.zf.setpassword(password.encode())
             self.zf.testzip()
         except RuntimeError:
@@ -87,6 +87,7 @@ class SublimallRetrieveCommand(sublime_plugin.ApplicationCommand, CommandWithSta
         else:
             self.password = password
             self.zf.close()
+            self.set_message("Archive decrypted. Applying configuration.")
             sublime.set_timeout_async(self.unpack, 0)
 
     def retrieve_from_server(self):
@@ -101,7 +102,11 @@ class SublimallRetrieveCommand(sublime_plugin.ApplicationCommand, CommandWithSta
 
         self.set_message("Requesting archive...")
         try:
-            r = requests.post(url=API_RETRIEVE_URL, data=data, stream=True, timeout=self.settings.get('http_upload_timeout'))
+            r = requests.post(
+                url=self.api_retrieve_url,
+                data=data,
+                stream=True,
+                timeout=self.settings.get('http_upload_timeout'))
         except requests.exceptions.ConnectionError as err:
             self.set_timed_message(
                 "Error while retrieving archive: server not available, try later",
@@ -111,7 +116,8 @@ class SublimallRetrieveCommand(sublime_plugin.ApplicationCommand, CommandWithSta
                 'Server (%s) not available, try later.\n'
                 '==========[EXCEPTION]==========\n'
                 '%s\n'
-                '===============================' % (API_RETRIEVE_URL, err))
+                '===============================' % (
+                    self.api_retrieve_url, err))
             return
 
         if r.status_code == 200:
@@ -153,13 +159,19 @@ class SublimallRetrieveCommand(sublime_plugin.ApplicationCommand, CommandWithSta
         archiver = Archiver()
         backup_name = '%s.zip' % time.time()
         logger.info('Create %s backup in Sublimall %s of actual configuration' % (
-            backup_name, BACKUP_DIRECTORY_NAME))
-        archiver.pack_packages(
-            output_filename=os.path.join(
-                os.path.dirname(__file__),
-                BACKUP_DIRECTORY_NAME,
-                backup_name),
-            backup=True)
+            backup_name, self.settings.get('backup_directory_name')))
+        try:
+            archiver.pack_packages(
+                output_filename=os.path.join(
+                    os.path.dirname(__file__),
+                    self.settings.get('backup_directory_name'),
+                    backup_name),
+                backup=True)
+        except Exception as err:
+            self.set_timed_message(str(err), clear=True)
+            raise
+
+        return True
 
     def unpack(self):
         """
@@ -208,8 +220,6 @@ class SublimallRetrieveCommand(sublime_plugin.ApplicationCommand, CommandWithSta
         """
         self.running = True
 
-        self.settings = sublime.load_settings('Sublimall.sublime-settings')
-
         self.email = self.settings.get('email', '')
         self.api_key = self.settings.get('api_key', '')
 
@@ -220,5 +230,9 @@ class SublimallRetrieveCommand(sublime_plugin.ApplicationCommand, CommandWithSta
             self.set_timed_message("Already working on a backup...")
             logger.warn('Already working on a backup')
             return
+
+        self.settings = sublime.load_settings(SETTINGS_USER_FILE)
+        self.api_retrieve_url = urljoin(
+            self.settings.get('api_root_url'), self.settings.get('api_retrieve_url'))
 
         sublime.set_timeout_async(self.start, 0)

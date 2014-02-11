@@ -1,22 +1,22 @@
 # -*- coding:utf-8 -*-
 import os
-import sys
 import sublime
-import sublime_plugin
 
-from .archiver import Archiver
-from .settings import logger
-from .settings import API_UPLOAD_URL
+from urllib.parse import urljoin
+from sublime_plugin import ApplicationCommand
+
 from .command import CommandWithStatus
 
-sys.path.append(os.path.dirname(__file__))
-from . import requests
+from ..logger import logger
+from ..archiver import Archiver
+from .. import requests
+from .. import SETTINGS_USER_FILE
 
 
-class SublimallUploadCommand(sublime_plugin.ApplicationCommand, CommandWithStatus):
+class UploadCommand(ApplicationCommand, CommandWithStatus):
 
     def __init__(self, *args, **kwargs):
-        super(SublimallUploadCommand, self).__init__(*args, **kwargs)
+        super(UploadCommand, self).__init__(*args, **kwargs)
         self.running = False
         self.password = None
         self.archive_filename = None
@@ -50,9 +50,13 @@ class SublimallUploadCommand(sublime_plugin.ApplicationCommand, CommandWithStatu
         self.set_message("Creating archive...")
 
         archiver = Archiver()
-        self.archive_filename = archiver.pack_packages(
-            password=self.password,
-            exclude_from_package_control=self.exclude_from_package_control)
+        try:
+            self.archive_filename = archiver.pack_packages(
+                password=self.password,
+                exclude_from_package_control=self.exclude_from_package_control)
+        except Exception as err:
+            self.set_timed_message(str(err), clear=True)
+            raise
 
         self.send_to_api()
 
@@ -81,7 +85,8 @@ class SublimallUploadCommand(sublime_plugin.ApplicationCommand, CommandWithStatu
 
         # Send data and delete temporary file
         try:
-            r = requests.post(url=API_UPLOAD_URL, files=files, timeout=50)
+            r = requests.post(
+                url=self.api_upload_url, files=files, timeout=50)
         except requests.exceptions.ConnectionError as err:
             self.set_timed_message(
                 "Error while sending archive: server not available, try later",
@@ -91,7 +96,8 @@ class SublimallUploadCommand(sublime_plugin.ApplicationCommand, CommandWithStatu
                 'Server (%s) not available, try later.\n'
                 '==========[EXCEPTION]==========\n'
                 '%s\n'
-                '===============================' % (API_UPLOAD_URL, err))
+                '===============================' % (
+                    self.api_upload_url, err))
             return
 
         f.close()
@@ -124,18 +130,21 @@ class SublimallUploadCommand(sublime_plugin.ApplicationCommand, CommandWithStatu
             logger.warn('Already working on a backup')
             return
 
+        self.settings = sublime.load_settings(SETTINGS_USER_FILE)
+        self.api_upload_url = urljoin(
+            self.settings.get('api_root_url'), self.settings.get('api_upload_url'))
+
         logger.info('Starting upload')
 
-        settings = sublime.load_settings('Sublimall.sublime-settings')
-
-        self.email = settings.get('email')
-        self.api_key = settings.get('api_key')
-        self.exclude_from_package_control = settings.get(
+        self.email = self.settings.get('email')
+        self.api_key = self.settings.get('api_key')
+        self.exclude_from_package_control = self.settings.get(
             'exclude_from_package_control', False)
-        self.encrypt = settings.get('encrypt', False)
+        self.encrypt = self.settings.get('encrypt', False)
 
         if not self.email or not self.api_key:
-            self.set_timed_message("api_key or email is missing in your Sublimall configuration", clear=True)
+            self.set_timed_message(
+                "api_key or email is missing in your Sublimall configuration", clear=True)
             logger.warn('API key or email is missing in configuration file. Abort')
             return
 

@@ -1,4 +1,16 @@
 {
+    ////////////////////////////
+    //// Sublimall settings ////
+    ////////////////////////////
+    // "api_root": "http://sublimall.socketubs.org",
+    "api_root_url": "http://localhost:8000",
+    "api_upload_url": "/api/upload/",
+    "api_retrieve_url": "/api/retrieve/",
+    "backup_directory_name": "backups",
+    "aa": "dick",
+    ///////////////////////
+    //// User settings ////
+    ///////////////////////
     "email": "",
     "api_key": "",
     // Set true if you want to exclude packages managed by Package Control

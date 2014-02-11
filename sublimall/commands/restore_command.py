@@ -1,20 +1,21 @@
 #-*- coding:utf-8 -*-
 import os
 import sublime
-import sublime_plugin
 from datetime import datetime
-from .archiver import Archiver
+
+from sublime_plugin import ApplicationCommand
+
 from .command import CommandWithStatus
-from .settings import BACKUP_DIRECTORY_NAME
+
+from ..archiver import Archiver
+from .. import SETTINGS_USER_FILE
 
 
-class SublimallRestore(sublime_plugin.ApplicationCommand, CommandWithStatus):
+class RestoreCommand(ApplicationCommand, CommandWithStatus):
 
     def __init__(self, *args, **kwargs):
-        super(SublimallRestore, self).__init__(*args, **kwargs)
+        super(RestoreCommand, self).__init__(*args, **kwargs)
         self.running = False
-        self.backups = []
-        self.backup_path = os.path.join(os.path.dirname(__file__), BACKUP_DIRECTORY_NAME)
 
     def restore(self, index):
         """
@@ -60,7 +61,8 @@ class SublimallRestore(sublime_plugin.ApplicationCommand, CommandWithStatus):
                 except Exception:
                     pass
 
-        self.backups.sort(key=lambda item: self.datetime_from_filename(item[1]), reverse=True)
+        self.backups.sort(
+            key=lambda item: self.datetime_from_filename(item[1]), reverse=True)
 
     def start(self):
         """
@@ -79,4 +81,12 @@ class SublimallRestore(sublime_plugin.ApplicationCommand, CommandWithStatus):
         if self.running:
             self.set_timed_message("Already working on a restore...")
             return
+
+        self.settings = sublime.load_settings(SETTINGS_USER_FILE)
+
+        self.backups = []
+        self.backup_path = os.path.join(
+            os.path.dirname(__file__),
+            self.settings.get('backup_directory_name'))
+
         sublime.set_timeout_async(self.start, 0)

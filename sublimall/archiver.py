@@ -2,9 +2,9 @@
 import os
 import shutil
 import sublime
-import sublime_plugin
-from zipfile import ZipFile
-from .settings import logger
+import subprocess
+from .logger import logger
+from .utils import get_7za_bin
 from .utils import generate_temp_filename
 
 
@@ -41,6 +41,22 @@ class Archiver(object):
         if os.path.exists(source):
             shutil.move(source, destination)
 
+    def _is_os_nt(self):
+        """
+        Returns whether current os is Windows or not
+        """
+        return os.name == 'nt'
+
+    def _get_7za_executable(self):
+        """
+        Returns absolute 7za executable path
+        """
+        bin = get_7za_bin()
+        if bin is None:
+            logger.error("Couldn't find 7za binary")
+            raise Exception("Couldn't find 7za binary")
+        return bin
+
     def _get_output_dir(self):
         """
         Returns the default output directory
@@ -48,70 +64,37 @@ class Archiver(object):
         # Assuming Packages and Installed Packages are in the same directory !
         return os.path.abspath(os.path.join(list(self.directory_list)[0], os.path.pardir))
 
-    def _run_archiver(self, command, password=None, **kwargs):
+    def _run_executable(self, command, password=None, **kwargs):
         """
-        Runs archiver
+        Runs 7z executable with arguments
         """
         assert command in ['a', 'x']
 
         # Pack archive
         if command == 'a':
             assert 'output_filename' in kwargs
-            output_filename = kwargs.get('output_filename')
-
-            # Open archive
-            with ZipFile(output_filename, mode='w') as z:
-                # Set password
-                if password:
-                    z.setpassword(bytes(password.encode('utf-8')))
-
-                skip = False
-                logger.info('[Archiver] Archive output: %s' % output_filename)
-                logger.info('[Archiver] Dirs to exclude: %s' % ','.join(kwargs.get('excluded_dirs', [])))
-                # Dirs to include (Installed Packages and Packages)
-                for root_dir in self.directory_list.keys():
-                    # For each files in Installed Packages and Packages
-                    for d in os.listdir(root_dir):
-                        absolute_d = os.path.join(root_dir, d)
-
-                        # Create path like that: Packages/Sublimall to compare with excluded dirs
-                        n_split = os.path.split(absolute_d)
-                        n_split = (os.path.split(n_split[-2])[-1], n_split[-1],)
-
-                        # Now iterate on excluded dirs
-                        for exclu in kwargs.get('excluded_dirs'):
-                            # Create similare path like that: Packages/Sublimall for exclude
-                            f_split = os.path.split(exclu)
-                            # Compare Packages 
-                            if f_split[-1] == n_split[-1] and f_split[-2] == n_split[-2]:
-                                skip = True
-                                break
-                        arch_path = os.path.join(n_split[-2], n_split[-1])
-
-                        if skip:
-                            logger.info('[Archiver] Ignoring %s' % arch_path)
-                            skip = False
-                            continue
-
-                        if os.path.isdir(absolute_d):
-                            for root, dirs, files in os.walk(absolute_d):
-                                for f in files:
-                                    relDir = os.path.relpath(root, absolute_d)
-                                    relFile = os.path.join(relDir, f)
-                                    logger.info('[Archiver] Adding %s' % os.path.join(arch_path, relFile))
-                                    z.write(os.path.join(root, f), os.path.join(arch_path, relFile))
-                        else:
-                            logger.info('[Archiver] Adding %s' % arch_path)
-                            z.write(absolute_d, arch_path)
-            z.close()
-            exitcode = 0
+            command_args = [self._get_7za_executable(), command, '-tzip', '-y']
+            if password is not None:
+                command_args.append('-p%s' % password)
+            if 'excluded_dirs' in kwargs:
+                command_args.extend(['-x!%s*' % excluded_dir for excluded_dir in kwargs['excluded_dirs']])
+            command_args.append(kwargs['output_filename'])
+            command_args.extend(self.directory_list.keys())
         # Unpack archive
         elif command == 'x':
             assert all(k in kwargs for k in ['input_file', 'output_dir'])
-            with ZipFile(kwargs.get('input_file'), mode='r') as z:
-                z.extractall(kwargs.get('output_dir'), pwd=password)
-            z.close()
-            exitcode = 0
+            command_args = [self._get_7za_executable(), command, '-tzip', '-y', '-o%s' % kwargs['output_dir']]
+            if password is not None:
+                command_args.append('-p%s' % password)
+            command_args.append(kwargs['input_file'])
+
+        # Run command
+        startupinfo = None
+        if self._is_os_nt():
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        process = subprocess.Popen(command_args, startupinfo=startupinfo)
+        exitcode = process.wait()
 
         return exitcode
 
@@ -149,7 +132,7 @@ class Archiver(object):
 
         logger.info('Move %s to %s' % (
             sublime.installed_packages_path(), self.installed_packages_bak_path))
-        self._safe_copy(
+        self._safe_move(
             sublime.installed_packages_path(), self.installed_packages_bak_path)
 
     def remove_backup_dirs(self):
@@ -186,7 +169,7 @@ class Archiver(object):
         # Generate a temporary output filename if necessary
         if 'output_filename' not in kwargs:
             kwargs['output_filename'] = generate_temp_filename()
-        self._run_archiver('a', password=password, **kwargs)
+        self._run_executable('a', password=password, **kwargs)
         return kwargs['output_filename']
 
     def unpack_packages(self, input_file, output_dir=None, password=None):
@@ -195,5 +178,5 @@ class Archiver(object):
         """
         if output_dir is None:
             output_dir = self._get_output_dir()
-        self._run_archiver(
+        self._run_executable(
             'x', password=password, input_file=input_file, output_dir=output_dir)

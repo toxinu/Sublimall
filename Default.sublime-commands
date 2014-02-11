@@ -1,14 +1,14 @@
 [
     {
-        "command": "sublimall_upload",
+        "command": "upload",
         "caption": "Sublimall: Upload"
     },
     {
-        "command": "sublimall_retrieve",
+        "command": "retrieve",
         "caption": "Sublimall: Retrieve"
     },
     {
-        "command": "sublimall_restore",
+        "command": "restore",
         "caption": "Sublimall: Restore backup"
     }
 ]
