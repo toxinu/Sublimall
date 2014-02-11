@@ -1,0 +1,24 @@
+Sublimall 0.0.4 Changelog:
+
+Important things
+ - Sublimall now need to have 7zip installed on your system as requirement (see help at the end)
+ - Sublimall is only compatible with SublimeText3
+ - Sublimall is in alpha stage, so backup your configuration
+ - Sublimall is tested on Linux, but Windows and OSX feedbacks are welcome
+ - Sublimall server code source is coming in maybe two weeks
+
+New Features
+ - Sublimall plugin refactor
+ - Encryption is now working on client side
+ - Sublimall accounts have now 30MB storage instead of 20MB
+ - More settings for people who want to host their own Sublimall
+
+Help
+ - You can find information on Github: https://github.com/socketubs/Sublimall
+ - On Sublimall website: http://sublimall.socketubs.org/docs
+ - Create issue on Github
+ - Email me: hello@socketubs.org
+
+Thank you for testing Sublimall!
+
+Geoffrey.
