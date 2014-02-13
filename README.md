@@ -1,6 +1,8 @@
 Sublimall
 =========
 
+**Warning**: This is in alpha stage!
+
 Sublimall is the way to sync and save your SublimeText configuration everywhere. Just create an account, install the plugin and that's all.
 Sublimall is an opensource, [server](http://sublimall.socketubs.org) and [plugin](https://github.com/socketubs/sublimall).
 
