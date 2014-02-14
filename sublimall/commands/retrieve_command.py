@@ -219,10 +219,6 @@ class RetrieveCommand(ApplicationCommand, CommandWithStatus):
         Decrypt stream using private key
         """
         self.running = True
-
-        self.email = self.settings.get('email', '')
-        self.api_key = self.settings.get('api_key', '')
-
         self.retrieve_from_server()
 
     def run(self, *args):
@@ -232,8 +228,16 @@ class RetrieveCommand(ApplicationCommand, CommandWithStatus):
             return
 
         self.settings = sublime.load_settings(SETTINGS_USER_FILE)
+        self.email = self.settings.get('email', '')
+        self.api_key = self.settings.get('api_key', '')
+
+        if not self.email or not self.api_key:
+            self.set_timed_message(
+                "api_key or email is missing in your Sublimall configuration", clear=True)
+            logger.warn('API key or email is missing in configuration file. Abort')
+            return
+
         self.api_retrieve_url = urljoin(
             self.settings.get('api_root_url'), self.settings.get('api_retrieve_url'))
-        logger.info('RETRIEVE URL %s (%s)' % (self.api_retrieve_url, self.settings.get('api_root_url')))
 
         sublime.set_timeout_async(self.start, 0)
