@@ -136,8 +136,8 @@ class UploadCommand(ApplicationCommand, CommandWithStatus):
 
         logger.info('Starting upload')
 
-        self.email = self.settings.get('email')
-        self.api_key = self.settings.get('api_key')
+        self.email = self.settings.get('email', '')
+        self.api_key = self.settings.get('api_key', '')
         self.exclude_from_package_control = self.settings.get(
             'exclude_from_package_control', False)
         self.encrypt = self.settings.get('encrypt', False)
