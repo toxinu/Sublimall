@@ -115,8 +115,14 @@ class UploadCommand(ApplicationCommand, CommandWithStatus):
                 "Error while sending archive: filesize too large (>20MB)", clear=True)
             logger.error("HTTP [%s] %s" % (r.status_code, r.content))
         else:
-            self.set_timed_message(
-                "Unexpected error (HTTP STATUS: %s)" % r.status_code, clear=True)
+            msg = "Unexpected error (HTTP STATUS: %s)" % r.status_code
+            try:
+                j = r.json()
+                for error in j.get('errors'):
+                    msg += " - %s" % error
+            except:
+                pass
+            self.set_timed_message(msg, clear=True, time=10)
             logger.error('HTTP [%s] %s' % (r.status_code, r.content))
 
         self.post_send()
