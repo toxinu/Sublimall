@@ -157,16 +157,16 @@ class RetrieveCommand(ApplicationCommand, CommandWithStatus):
         Creates a backup of Packages and Installed Packages before unpacking
         """
         archiver = Archiver()
-        backup_name = '%s.zip' % time.time()
-        logger.info('Create %s backup in Sublimall %s of actual configuration' % (
-            backup_name, self.settings.get('backup_directory_name')))
+        backup_dir_path = os.path.join(
+            sublime.packages_path(),
+            'Sublimall',
+            'Backup')
+        backup_path = os.path.join(backup_dir_path, '%s.zip' % time.time())
+        logger.info('Create backup in Sublimall %s of actual configuration' % backup_path)
         try:
-            archiver.pack_packages(
-                output_filename=os.path.join(
-                    os.path.dirname(__file__),
-                    self.settings.get('backup_directory_name'),
-                    backup_name),
-                backup=True)
+            if not os.path.exists(backup_dir_path):
+                os.makedirs(backup_dir_path)
+            archiver.pack_packages(output_filename=backup_path, backup=True)
         except Exception as err:
             self.set_timed_message(str(err), clear=True)
             raise
@@ -234,5 +234,6 @@ class RetrieveCommand(ApplicationCommand, CommandWithStatus):
         self.settings = sublime.load_settings(SETTINGS_USER_FILE)
         self.api_retrieve_url = urljoin(
             self.settings.get('api_root_url'), self.settings.get('api_retrieve_url'))
+        logger.info('RETRIEVE URL %s (%s)' % (self.api_retrieve_url, self.settings.get('api_root_url')))
 
         sublime.set_timeout_async(self.start, 0)

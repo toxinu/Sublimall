@@ -85,8 +85,6 @@ class RestoreCommand(ApplicationCommand, CommandWithStatus):
         self.settings = sublime.load_settings(SETTINGS_USER_FILE)
 
         self.backups = []
-        self.backup_path = os.path.join(
-            os.path.dirname(__file__),
-            self.settings.get('backup_directory_name'))
+        self.backup_path = os.path.join(sublime.packages_path(), 'Sublimall', 'Backup')
 
         sublime.set_timeout_async(self.start, 0)

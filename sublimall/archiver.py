@@ -2,8 +2,11 @@
 import os
 import shutil
 import sublime
+import tempfile
 import subprocess
+from . import blacklist
 from .logger import logger
+from .utils import copytree
 from .utils import get_7za_bin
 from .utils import generate_temp_filename
 
@@ -31,8 +34,8 @@ class Archiver(object):
             shutil.rmtree(directory, ignore_errors=True)
 
     def _safe_copy(self, source, destination):
-        if os.path.exists(source):
-            shutil.copytree(source, destination)
+        if not os.path.exists(destination):
+            shutil.copytree(source, destination, symlinks=True)
 
     def _safe_move(self, source, destination):
         """
@@ -117,23 +120,28 @@ class Archiver(object):
         self.remove_backup_dirs()
 
         # Packages directory requires a little bit of filtering to exlude sublimall
-        os.makedirs(self.packages_bak_path)
-        logger.info('Create new package bak dir: %s' % self.packages_bak_path)
+        # os.makedirs(self.packages_bak_path)
+        # logger.info('Create new package bak dir: %s' % self.packages_bak_path)
 
-        self_package_directory = os.path.split(os.path.dirname(__file__))[1]
-        for directory in next(os.walk(sublime.packages_path()))[1]:
-            if directory != self_package_directory:
-                logger.info('Move %s package to %s' % (
-                    os.path.join(sublime.packages_path(), directory),
-                    self.packages_bak_path))
-                self._safe_move(
-                    os.path.join(sublime.packages_path(), directory),
-                    self.packages_bak_path)
+        # self_package_directory = os.path.split(os.path.dirname(__file__))[1]
+        # logger.info('SELF %s' % self_package_directory)
+        # for directory in next(os.walk(sublime.packages_path()))[1]:
+        #     if directory != self_package_directory:
+        #         logger.info('Copy %s package to %s' % (
+        #             os.path.join(sublime.packages_path(), directory),
+        #             self.packages_bak_path))
+        #         self._safe_move(
+        #             os.path.join(sublime.packages_path(), directory),
+        #             self.packages_bak_path)
 
         logger.info('Move %s to %s' % (
             sublime.installed_packages_path(), self.installed_packages_bak_path))
-        self._safe_move(
+        self._safe_copy(
             sublime.installed_packages_path(), self.installed_packages_bak_path)
+        logger.info('Move %s to %s' % (
+            sublime.packages_path(), self.packages_bak_path))
+        self._safe_copy(
+            sublime.packages_path(), self.packages_bak_path)
 
     def remove_backup_dirs(self):
         """
@@ -153,17 +161,22 @@ class Archiver(object):
         Compresses Packages and Installed Packages
         """
         excluded_dirs = kwargs.get('excluded_dirs', [])
+        packages_root_path = os.path.basename(sublime.packages_path())
+        installed_packages_root_path = os.path.basename(sublime.installed_packages_path())
 
-        # Append sublimall to excluded dirs
-        excluded_dirs.append(
-            os.path.relpath(
-                os.path.dirname(__file__),
-                os.path.join(sublime.packages_path(), os.pardir)))
+        # Append blacklisted Packages to excluded dirs
+        for package in blacklist.packages:
+            excluded_dirs.append(os.path.join(packages_root_path, package))
+
+        # Append blacklisted Installed Packages to excluded dirs
+        for package in blacklist.installed_packages:
+            excluded_dirs.append(os.path.join(installed_packages_root_path, package))
 
         # Add Package Control excludes
         if exclude_from_package_control and not backup:
             excluded_dirs.extend(self._excludes_from_package_control())
 
+        logger.info('Excluded dirs: %s' % excluded_dirs)
         kwargs['excluded_dirs'] = excluded_dirs
 
         # Generate a temporary output filename if necessary
@@ -178,5 +191,9 @@ class Archiver(object):
         """
         if output_dir is None:
             output_dir = self._get_output_dir()
+        #temp_output_dir = tempfile.mkdtemp()
+        logger.info('Extract in %s directory' % output_dir)
         self._run_executable(
             'x', password=password, input_file=input_file, output_dir=output_dir)
+        #shutil.copytree(temp_output_dir, output_dir or self._get_output_dir(), ignore_errors=lambda: None)
+        #shutil.rmtree(temp_output_dir)
