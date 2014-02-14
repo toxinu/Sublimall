@@ -2,11 +2,9 @@
 import os
 import shutil
 import sublime
-import tempfile
 import subprocess
 from . import blacklist
 from .logger import logger
-from .utils import copytree
 from .utils import get_7za_bin
 from .utils import generate_temp_filename
 
@@ -54,11 +52,11 @@ class Archiver(object):
         """
         Returns absolute 7za executable path
         """
-        bin = get_7za_bin()
-        if bin is None:
+        zip_bin = get_7za_bin()
+        if zip_bin is None:
             logger.error("Couldn't find 7za binary")
             raise Exception("Couldn't find 7za binary")
-        return bin
+        return zip_bin
 
     def _get_output_dir(self):
         """
@@ -119,21 +117,6 @@ class Archiver(object):
         """
         self.remove_backup_dirs()
 
-        # Packages directory requires a little bit of filtering to exlude sublimall
-        # os.makedirs(self.packages_bak_path)
-        # logger.info('Create new package bak dir: %s' % self.packages_bak_path)
-
-        # self_package_directory = os.path.split(os.path.dirname(__file__))[1]
-        # logger.info('SELF %s' % self_package_directory)
-        # for directory in next(os.walk(sublime.packages_path()))[1]:
-        #     if directory != self_package_directory:
-        #         logger.info('Copy %s package to %s' % (
-        #             os.path.join(sublime.packages_path(), directory),
-        #             self.packages_bak_path))
-        #         self._safe_move(
-        #             os.path.join(sublime.packages_path(), directory),
-        #             self.packages_bak_path)
-
         logger.info('Move %s to %s' % (
             sublime.installed_packages_path(), self.installed_packages_bak_path))
         self._safe_copy(
@@ -191,9 +174,6 @@ class Archiver(object):
         """
         if output_dir is None:
             output_dir = self._get_output_dir()
-        #temp_output_dir = tempfile.mkdtemp()
         logger.info('Extract in %s directory' % output_dir)
         self._run_executable(
             'x', password=password, input_file=input_file, output_dir=output_dir)
-        #shutil.copytree(temp_output_dir, output_dir or self._get_output_dir(), ignore_errors=lambda: None)
-        #shutil.rmtree(temp_output_dir)
