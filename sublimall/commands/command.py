@@ -24,7 +24,7 @@ class CommandWithStatus(object):
     def __init__(self, *args, **kwargs):
         self._messageStatus = MessageStatus()
 
-    def set_timed_message(self, message, time=5000, clear=False):
+    def set_timed_message(self, message, time=5, clear=False):
         """
         Show a message for a specified amount of time
         and re-set the previous after it.
@@ -32,7 +32,7 @@ class CommandWithStatus(object):
         old_message = self._messageStatus.message
         self.set_message(message)
         if not clear:
-            sublime.set_timeout(lambda: self.set_message(old_message), time)
+            sublime.set_timeout(lambda: self.set_message(old_message), time * 1000)
         else:
             self.unset_message()
 
