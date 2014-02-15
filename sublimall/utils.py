@@ -9,16 +9,19 @@ from . import SETTINGS_USER_FILE
 
 def get_7za_bin():
     settings = sublime.load_settings(SETTINGS_USER_FILE)
-    zip_bin = shutil.which('7za')
+    zip_bin = None
 
-    if zip_bin is None:
-        if settings.get('7za_path') and os.path.exists(settings.get('7za_path')):
-            zip_bin = settings.get('7za_path')
-        elif os.name == 'nt':
-            print(os.path.exists(os.path.join(os.environ.get('PROGRAMFILES'), '7-Zip', '7z.exe')))
-            zip_bin = os.path.join(os.environ.get('PROGRAMFILES'), '7-Zip', '7z.exe')
-            if not os.path.exists(zip_bin):
-                zip_bin = None
+    if settings.get('7za_path') and os.path.exists(settings.get('7za_path')):
+        zip_bin = settings.get('7za_path')
+    elif shutil.which('7z'):
+        zip_bin = shutil.which('7z')
+    elif shutil.which('7za'):
+        zip_bin = shutil.which('7za')
+    elif os.name == 'nt':
+        if os.path.exists(os.path.join(os.environ.get('ProgramFiles'), '7-Zip', '7z.exe')):
+            zip_bin = os.path.join(os.environ.get('ProgramFiles'), '7-Zip', '7z.exe')
+        if os.path.exists(os.path.join(os.environ.get('ProgramFiles(x86)'), '7-Zip', '7z.exe')):
+            zip_bin = os.path.join(os.environ.get('ProgramFiles(x86)'), '7-Zip', '7z.exe')
 
     return zip_bin
 
