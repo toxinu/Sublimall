@@ -14,7 +14,7 @@ from imp import reload
 
 reload_mods = []
 for mod in sys.modules:
-    if mod[0:15].lower().replace(' ', '_') == 'sublimall' and sys.modules[mod] is not None:
+    if mod[:9].lower() == 'sublimall' and sys.modules[mod] is not None:
         reload_mods.append(mod)
 
 mod_prefix = 'Sublimall.sublimall'
