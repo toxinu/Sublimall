@@ -112,7 +112,7 @@ class UploadCommand(ApplicationCommand, CommandWithStatus):
             logger.info('HTTP [%s] Bad credentials' % r.status_code)
         elif r.status_code == 413:
             self.set_timed_message(
-                "Error while sending archive: filesize too large (>20MB)", clear=True)
+                "Error while sending archive: filesize too large (>30MB)", clear=True)
             logger.error("HTTP [%s] %s" % (r.status_code, r.content))
         else:
             msg = "Unexpected error (HTTP STATUS: %s)" % r.status_code
