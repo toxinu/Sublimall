@@ -29,15 +29,15 @@
                                 "caption": "-"
                             },
                             {
-                                "command": "sublimall_upload",
+                                "command": "upload",
                                 "caption": "Upload"
                             },
                             {
-                                "command": "sublimall_retrieve",
+                                "command": "retrieve",
                                 "caption": "Retrieve"
                             },
                             {
-                                "command": "sublimall_restore",
+                                "command": "restore",
                                 "caption": "Restore backup"
                             }
                         ]

@@ -17,6 +17,6 @@
     "encrypt": true,
     // Upload timeout in seconds
     "http_upload_timeout": 60,
-    // 7zip binary path (Sublimall will try to find it itself)
+    // Path to 7zip executable, though Sublimall tries to find it out itself
     "7za_path": ""
 }

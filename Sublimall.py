@@ -16,7 +16,7 @@ def plugin_loaded():
     from .sublimall.utils import get_7za_bin
 
     if get_7za_bin() is None:
-        msg = "Sublimall need 7zip to archive and encrypt your configuration.\nInstall it. "
+        msg = "Sublimall needs 7zip to compress and encrypt your configuration.\nPlease install it and specify its path in the settings file."
         sublime.error_message(msg)
 
 from .sublimall import reloader
