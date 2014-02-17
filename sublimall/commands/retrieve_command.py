@@ -106,7 +106,7 @@ class RetrieveCommand(ApplicationCommand, CommandWithStatus):
                 url=self.api_retrieve_url,
                 data=data,
                 stream=True,
-                timeout=self.settings.get('http_upload_timeout'))
+                timeout=self.settings.get('http_download_timeout'))
         except requests.exceptions.ConnectionError as err:
             self.set_timed_message(
                 "Error while retrieving archive: server not available, try later",
@@ -114,6 +114,19 @@ class RetrieveCommand(ApplicationCommand, CommandWithStatus):
             self.running = False
             logger.error(
                 'Server (%s) not available, try later.\n'
+                '==========[EXCEPTION]==========\n'
+                '%s\n'
+                '===============================' % (
+                    self.api_retrieve_url, err))
+            return
+        except requests.exceptions.Timeout as err:
+            self.set_timed_message(
+                "Error while retrieving archive: download take to long time. "
+                "Increase \"http_download_timeout\" setting.",
+                clear=True)
+            self.running = False
+            logger.error(
+                'Server (%s) time out, request take too long, try later.\n'
                 '==========[EXCEPTION]==========\n'
                 '%s\n'
                 '===============================' % (

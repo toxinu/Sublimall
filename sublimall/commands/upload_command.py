@@ -86,7 +86,9 @@ class UploadCommand(ApplicationCommand, CommandWithStatus):
         # Send data and delete temporary file
         try:
             r = requests.post(
-                url=self.api_upload_url, files=files, timeout=50)
+                url=self.api_upload_url,
+                files=files,
+                timeout=self.settings.get('http_upload_timeout'))
         except requests.exceptions.ConnectionError as err:
             self.set_timed_message(
                 "Error while sending archive: server not available, try later",
@@ -94,6 +96,19 @@ class UploadCommand(ApplicationCommand, CommandWithStatus):
             self.running = False
             logger.error(
                 'Server (%s) not available, try later.\n'
+                '==========[EXCEPTION]==========\n'
+                '%s\n'
+                '===============================' % (
+                    self.api_upload_url, err))
+            return
+        except requests.exceptions.Timeout as err:
+            self.set_timed_message(
+                "Error while sending archive: upload take to long time. "
+                "Increase \"http_upload_timeout\" setting.",
+                clear=True)
+            self.running = False
+            logger.error(
+                'Server (%s) time out, request take too long, try later.\n'
                 '==========[EXCEPTION]==========\n'
                 '%s\n'
                 '===============================' % (
