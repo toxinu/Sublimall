@@ -74,7 +74,7 @@ class Archiver(object):
         # Pack archive
         if command == 'a':
             assert 'output_filename' in kwargs
-            command_args = [self._get_7za_executable(), command, '-tzip', '-y']
+            command_args = [self._get_7za_executable(), command, '-tzip', '-mx=9', '-y']
             if password is not None:
                 command_args.append('-p%s' % password)
             if 'excluded_dirs' in kwargs:
@@ -154,6 +154,10 @@ class Archiver(object):
         # Append blacklisted Installed Packages to excluded dirs
         for package in blacklist.installed_packages:
             excluded_dirs.append(os.path.join(installed_packages_root_path, package))
+
+        # Append custom ignored packages
+        for package in blacklist.get_ignored_packages():
+            excluded_dirs.append(package)
 
         # Add Package Control excludes
         if exclude_from_package_control and not backup:
