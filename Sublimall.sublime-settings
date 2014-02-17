@@ -11,6 +11,8 @@
     ///////////////////////
     "email": "",
     "api_key": "",
+    // Paths must be: "Packages/SublimeCodeIntel" or "Installed Packages/Sublimall"
+    "ignore_packages": [],
     // Set true if you want to exclude packages managed by Package Control
     "exclude_from_package_control": false,
     // Set false if you don't want to encrypt your configuration
