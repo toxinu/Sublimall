@@ -26,6 +26,7 @@ mods_load_order = [
     '.logger',
     '.archiver',
     '.settings',
+    '.blacklist',
 
     '.commands',
     '.commands.command',
