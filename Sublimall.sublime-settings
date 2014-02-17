@@ -16,7 +16,9 @@
     // Set false if you don't want to encrypt your configuration
     "encrypt": true,
     // Upload timeout in seconds
-    "http_upload_timeout": 60,
+    "http_upload_timeout": 120,
+    // Download timeout in seconds
+    "http_download_timeout": 120,
     // Path to 7zip executable, though Sublimall tries to find it out itself
     "7za_path": ""
 }
