@@ -28,3 +28,12 @@ def get_7za_bin():
 
 def generate_temp_filename():
     return os.path.join(tempfile.gettempdir(), 'sublime-sync_%s.zip' % str(uuid.uuid4()))
+
+def add_symlinks():
+    settings = sublime.load_settings(SETTINGS_USER_FILE)
+    symlinks = False
+
+    if settings.get('symlinks'):
+        symlinks = settings.get('symlinks')
+
+    return symlinks
