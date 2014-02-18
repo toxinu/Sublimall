@@ -22,5 +22,8 @@
     // Download timeout in seconds
     "http_download_timeout": 120,
     // Path to 7zip executable, though Sublimall tries to find it out itself
-    "7za_path": ""
+    "7za_path": "",
+    // HTTP proxy to use for HTTP requests. Support for authentication
+    // Examples: http://user:password@host:port or http://ip:port
+    "http_proxy": ""
 }
