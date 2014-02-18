@@ -6,6 +6,7 @@ import subprocess
 from . import blacklist
 from .logger import logger
 from .utils import get_7za_bin
+from .utils import add_symlinks
 from .utils import generate_temp_filename
 
 
@@ -75,6 +76,9 @@ class Archiver(object):
         if command == 'a':
             assert 'output_filename' in kwargs
             command_args = [self._get_7za_executable(), command, '-tzip', '-mx=9', '-y']
+            symlinks = add_symlinks()
+            if symlinks == True:
+                command_args.append('-l')
             if password is not None:
                 command_args.append('-p%s' % password)
             if 'excluded_dirs' in kwargs:
