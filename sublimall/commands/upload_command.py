@@ -1,7 +1,6 @@
 # -*- coding:utf-8 -*-
 import os
 import sublime
-from io import BytesIO
 from urllib.parse import urljoin
 from sublime_plugin import ApplicationCommand
 
@@ -13,55 +12,12 @@ from .. import requests
 from .. import SETTINGS_USER_FILE
 
 
-class CancelledError(Exception):
-    def __init__(self, msg):
-        self.msg = msg
-        Exception.__init__(self, msg)
-
-    def __str__(self):
-        return self.msg
-
-    __repr__ = __str__
-
-
-class BufferReader(BytesIO):
-    def __init__(self, buf=b'', callback=None, cb_args=(), cb_kwargs={}):
-        self._callback = callback
-        self._cb_args = cb_args
-        self._cb_kwargs = cb_kwargs
-        self._progress = 0
-        self._len = len(buf)
-        BytesIO.__init__(self, buf)
-
-    def __len__(self):
-        return self._len
-
-    def read(self, n=-1):
-        chunk = BytesIO.read(self, n)
-        self._progress += int(len(chunk))
-        self._cb_kwargs.update({
-            'size': self._len,
-            'progress': self._progress
-        })
-        if self._callback:
-            try:
-                self._callback(*self._cb_args, **self._cb_kwargs)
-            # Catches exception from the callback
-            except:
-                raise CancelledError('The upload was cancelled.')
-        return chunk
-
-
 class UploadCommand(ApplicationCommand, CommandWithStatus):
     def __init__(self, *args, **kwargs):
         super(UploadCommand, self).__init__(*args, **kwargs)
         self.running = False
         self.password = None
         self.archive_filename = None
-
-    def progress(self, size=None, progress=None):
-        pass
-        # print("{0} / {1}".format(size, progress))
 
     def post_send(self):
         """
@@ -126,16 +82,11 @@ class UploadCommand(ApplicationCommand, CommandWithStatus):
             'api_key': self.api_key,
         }
 
-        data, ctype = requests.packages.urllib3.filepost.encode_multipart_formdata(files)
-        headers = {"Content-Type": ctype}
-        body = BufferReader(data, self.progress)
-
         # Send data and delete temporary file
         try:
             r = requests.post(
                 url=self.api_upload_url,
-                data=body,
-                headers=headers,
+                files=files,
                 timeout=self.settings.get('http_upload_timeout'))
         except requests.exceptions.ConnectionError as err:
             self.set_timed_message(
