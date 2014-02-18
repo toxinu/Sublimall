@@ -27,5 +27,7 @@
     // Examples: http://user:password@host:port or http://ip:port
     "http_proxy": "",
     // Don't store symlinks. Store the files/directories they point to
-    "symlinks": true
+    // (CAUTION : the scanning stage can never end because of recursive symlinks
+    // like 'ln -s .. ldir')
+    "symlinks": false
 }
