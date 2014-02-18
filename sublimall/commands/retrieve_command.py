@@ -101,11 +101,15 @@ class RetrieveCommand(ApplicationCommand, CommandWithStatus):
         }
 
         self.set_message("Requesting archive...")
+        proxies = {}
+        if self.settings.get('http_proxy', ''):
+            proxies = {'http': self.settings.get('http_proxy')}
         try:
             r = requests.post(
                 url=self.api_retrieve_url,
                 data=data,
                 stream=True,
+                proxies=proxies,
                 timeout=self.settings.get('http_download_timeout'))
         except requests.exceptions.ConnectionError as err:
             self.set_timed_message(

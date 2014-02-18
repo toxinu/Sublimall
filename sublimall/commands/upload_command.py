@@ -83,15 +83,20 @@ class UploadCommand(ApplicationCommand, CommandWithStatus):
         }
 
         # Send data and delete temporary file
+        proxies = {}
+        if self.settings.get('http_proxy', ''):
+            proxies = {'http': self.settings.get('http_proxy')}
         try:
             r = requests.post(
                 url=self.api_upload_url,
                 files=files,
+                proxies=proxies,
                 timeout=self.settings.get('http_upload_timeout'))
         except requests.exceptions.ConnectionError as err:
             self.set_timed_message(
                 "Error while sending archive: server not available, try later",
                 clear=True)
+            print(err)
             self.running = False
             logger.error(
                 'Server (%s) not available, try later.\n'
