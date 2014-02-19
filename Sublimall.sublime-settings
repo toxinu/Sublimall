@@ -25,5 +25,7 @@
     "7za_path": "",
     // HTTP proxy to use for HTTP requests. Support for authentication
     // Examples: http://user:password@host:port or http://ip:port
-    "http_proxy": ""
+    "http_proxy": "",
+    // Don't follow symlinks
+    "symlinks": false
 }
