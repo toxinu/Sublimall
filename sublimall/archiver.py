@@ -77,7 +77,7 @@ class Archiver(object):
         if command == 'a':
             assert 'output_filename' in kwargs
             command_args = [self._get_7za_executable(), command, '-tzip', '-mx=9', '-y']
-            if self.settings.get('symlinks', True):
+            if self.settings.get('symlinks', False):
                 command_args.append('-l')
             if password is not None:
                 command_args.append('-p%s' % password)
