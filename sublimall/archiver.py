@@ -4,9 +4,9 @@ import shutil
 import sublime
 import subprocess
 from . import blacklist
+from . import SETTINGS_USER_FILE
 from .logger import logger
 from .utils import get_7za_bin
-from .utils import add_symlinks
 from .utils import generate_temp_filename
 
 
@@ -24,6 +24,7 @@ class Archiver(object):
         }
         self.packages_bak_path = '%s.bak' % sublime.packages_path()
         self.installed_packages_bak_path = '%s.bak' % sublime.installed_packages_path()
+        self.settings = sublime.load_settings(SETTINGS_USER_FILE)
 
     def _safe_rmtree(self, directory):
         """
@@ -76,8 +77,7 @@ class Archiver(object):
         if command == 'a':
             assert 'output_filename' in kwargs
             command_args = [self._get_7za_executable(), command, '-tzip', '-mx=9', '-y']
-            symlinks = add_symlinks()
-            if symlinks == True:
+            if self.settings.get('symlinks', True):
                 command_args.append('-l')
             if password is not None:
                 command_args.append('-p%s' % password)
