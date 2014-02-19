@@ -26,8 +26,6 @@
     // HTTP proxy to use for HTTP requests. Support for authentication
     // Examples: http://user:password@host:port or http://ip:port
     "http_proxy": "",
-    // Don't store symlinks. Store the files/directories they point to
-    // (CAUTION : the scanning stage can never end because of recursive symlinks
-    // like 'ln -s .. ldir')
+    // Don't follow symlinks
     "symlinks": false
 }
