@@ -142,7 +142,6 @@ class UploadCommand(ApplicationCommand, CommandWithStatus):
             except:
                 pass
             self.set_timed_message(msg, clear=True, time=10)
-            open('/home/socketubs/sublimall.html', 'wb').write(r.content)
             logger.error('HTTP [%s] %s' % (r.status_code, r.content))
 
         self.post_send()
