@@ -3,7 +3,7 @@ Sublimall
 
 [![Gitter chat](https://badges.gitter.im/socketubs/Sublimall.png)](https://gitter.im/socketubs/Sublimall)
 
-**Warning**: This is in alpha stage!
+**Warning**: Sublimall is only for Sublime Text 3!
 
 Sublimall is the way to sync and save your SublimeText configuration everywhere. Just create an account, install the plugin and that's all.
 Sublimall is an opensource, [server](http://sublimall.org) and [plugin](https://github.com/socketubs/Sublimall).
@@ -18,6 +18,11 @@ Install
 =======
 
 Let's visit [doc](http://sublimall.org/docs) page.
+If for any reason you can't found Sublimall on Package Control, there is a manual way to install it.
+
+* Open a terminal
+* Go to SublimeText plugins directory (cd $HOME/.config/sublime-text-3/Packages)
+* And clone Sublimall repository: ``git clone https://github.com/socketubs/Sublimall.git``
 
 Report a bug
 ============
