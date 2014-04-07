@@ -18,10 +18,13 @@
     // Set false if you don't want to encrypt your configuration
     "encrypt": true,
     // Upload timeout in seconds
-    "http_upload_timeout": 180,
+    "http_upload_timeout": 240,
     // Download timeout in seconds
-    "http_download_timeout": 180,
+    "http_download_timeout": 240,
     // Path to 7zip executable, though Sublimall tries to find it out itself
+    // OSX: "/usr/local/Cellar/p7zip/*/bin/7za"
+    // Linux: "/usr/bin/7za" or "/usr/binp7zip"
+    // But you can overwrite it here.
     "7za_path": "",
     // HTTP proxy to use for HTTP requests. Support for authentication
     // Examples: http://user:password@host:port or http://ip:port
