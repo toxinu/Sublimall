@@ -10,6 +10,7 @@ from ..logger import logger
 from ..archiver import Archiver
 from .. import requests
 from .. import SETTINGS_USER_FILE
+from ..utils import humansize
 
 
 class UploadCommand(ApplicationCommand, CommandWithStatus):
@@ -19,11 +20,12 @@ class UploadCommand(ApplicationCommand, CommandWithStatus):
         self.password = None
         self.archive_filename = None
 
-    def post_send(self):
+    def post_send(self, clear=True):
         """
         Resets values
         """
-        self.unset_message()
+        if clear:
+            self.unset_message()
         self.running = False
         self.password = None
         self.archive_filename = None
@@ -52,12 +54,11 @@ class UploadCommand(ApplicationCommand, CommandWithStatus):
             self.archive_filename = archiver.pack_packages(
                 password=self.password,
                 exclude_from_package_control=self.exclude_from_package_control)
+            self.send_to_api()
         except Exception as err:
             self.set_timed_message(str(err), clear=True)
             logger.error(err)
-            self.post_send()
-
-        self.send_to_api()
+            self.post_send(clear=False)
 
     def pack_and_send_async(self, password=None):
         """
@@ -70,7 +71,15 @@ class UploadCommand(ApplicationCommand, CommandWithStatus):
         """
         Send archive file to API
         """
-        self.set_message("Sending archive...")
+        if not os.path.exists(self.archive_filename):
+            self.set_message("Error while sending archive: archive not found")
+
+        # Just get size
+        f = open(self.archive_filename, 'rb')
+        f.seek(0, 2)
+        self.set_message("Sending archive (%s)..." % humansize(f.tell()))
+
+        # Really open file
         f = open(self.archive_filename, 'rb')
 
         files = {
@@ -96,7 +105,6 @@ class UploadCommand(ApplicationCommand, CommandWithStatus):
             self.set_timed_message(
                 "Error while sending archive: server not available, try later",
                 clear=True)
-            print(err)
             self.running = False
             logger.error(
                 'Server (%s) not available, try later.\n'
@@ -144,14 +152,14 @@ class UploadCommand(ApplicationCommand, CommandWithStatus):
             self.set_timed_message(msg, clear=True, time=10)
             logger.error('HTTP [%s] %s' % (r.status_code, r.content))
 
-        self.post_send()
+        self.post_send(clear=False)
 
     def run(self, *args):
         """
         Create an archive of all packages and settings
         """
         if self.running:
-            self.set_timed_message("Already working on a backup...")
+            self.set_timed_message("Already working on a backup...", time=1)
             logger.warn('Already working on a backup')
             return
 
