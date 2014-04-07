@@ -1,0 +1,25 @@
+Sublimall 0.0.11 Changelog:
+
+Reminder
+ - Sublimall need to have 7zip installed on your system as requirement (see help at the end)
+ - Sublimall is only compatible with SublimeText3
+ - Sublimall is in alpha stage, so backup your configuration
+ - Sublimall is tested on Linux, but Windows and OSX feedbacks are welcome
+ - Sublimall server code source is on Github!
+
+New stuff
+ - Better error handling in SublimeText status bar
+ - Display archive size in status bar
+ - Better 7zip detection
+ - Increase http timeout limitation
+ - Some bug fixes
+
+Help
+ - You can find information on Github: https://github.com/socketubs/Sublimall
+ - On Sublimall website: http://sublimall.org/docs
+ - Create issue on Github
+ - Email me: hello@socketubs.org
+
+Thank you for using Sublimall!
+
+Geoffrey.
