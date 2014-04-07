@@ -3,6 +3,7 @@ import os
 import shutil
 import sublime
 import subprocess
+from subprocess import PIPE
 from . import blacklist
 from . import SETTINGS_USER_FILE
 from .logger import logger
@@ -98,8 +99,22 @@ class Archiver(object):
         if self._is_os_nt():
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        process = subprocess.Popen(command_args, startupinfo=startupinfo)
+        logger.info('Command: %s' % command_args)
+        process = subprocess.Popen(
+            command_args,
+            startupinfo=startupinfo,
+            stdout=PIPE,
+            stderr=PIPE,
+            close_fds=True)
+        output = process.communicate()
         exitcode = process.wait()
+
+        if exitcode > 0:
+            msg = 'Error while runing p7zip (exit code: %s)' % exitcode
+            logger.error(msg)
+            logger.error('Command: %s' % command_args)
+            logger.error('Output:\n %s' % str(output))
+            raise Exception(msg)
 
         return exitcode
 
