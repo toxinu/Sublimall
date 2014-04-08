@@ -103,7 +103,7 @@ class UploadCommand(ApplicationCommand, CommandWithStatus):
         if not os.path.exists(self.archive_filename):
             msg = "Error while sending archive: archive not found"
             self.set_timed_message(msg)
-            show_report(msg + '\n' + 'Path:%s' % self.archive_filename)
+            show_report(msg + '\n' + 'Path:%s' % self.archive_filename, exception=False)
             self.running = False
             return
 
