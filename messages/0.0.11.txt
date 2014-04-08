@@ -9,6 +9,7 @@ Reminder
 
 New stuff
  - Better error handling in SublimeText status bar
+ - Sublimall will check max package size before uploading
  - When Sublimall crash, a pane with error is displayed
  - Display archive size in status bar
  - Better 7zip detection
