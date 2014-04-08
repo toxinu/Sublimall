@@ -56,7 +56,7 @@ def show_report(subtitle, message=None, exception=True):
         if message:
             f.write(message)
         if exception:
-            f.write('n')
+            f.write('\n')
             f.write(
                 '=' * 35 + ' Traceback ' + '=' * 35 + '\n' + traceback.format_exc())
             f.write('=' * 81 + '\n')
