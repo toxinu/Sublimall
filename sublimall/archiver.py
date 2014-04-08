@@ -4,14 +4,16 @@ import shutil
 import sublime
 import subprocess
 from subprocess import PIPE
+
 from . import blacklist
 from . import SETTINGS_USER_FILE
 from .logger import logger
+from .utils import is_win
 from .utils import get_7za_bin
 from .utils import generate_temp_filename
 
 
-class Archiver(object):
+class Archiver:
     """
     Archiver using external executable
     """
@@ -45,12 +47,6 @@ class Archiver(object):
         if os.path.exists(source):
             shutil.move(source, destination)
 
-    def _is_os_nt(self):
-        """
-        Returns whether current os is Windows or not
-        """
-        return os.name == 'nt'
-
     def _get_7za_executable(self):
         """
         Returns absolute 7za executable path
@@ -83,20 +79,24 @@ class Archiver(object):
             if password is not None:
                 command_args.append('-p%s' % password)
             if 'excluded_dirs' in kwargs:
-                command_args.extend(['-x!%s*' % excluded_dir for excluded_dir in kwargs['excluded_dirs']])
+                command_args.extend(
+                    ['-x!%s*' % excluded_dir for excluded_dir in kwargs['excluded_dirs']])
             command_args.append(kwargs['output_filename'])
             command_args.extend(self.directory_list.keys())
         # Unpack archive
         elif command == 'x':
             assert all(k in kwargs for k in ['input_file', 'output_dir'])
-            command_args = [self._get_7za_executable(), command, '-tzip', '-y', '-o%s' % kwargs['output_dir']]
+            command_args = [
+                self._get_7za_executable(),
+                command,
+                '-tzip', '-y', '-o%s' % kwargs['output_dir']]
             if password is not None:
                 command_args.append('-p%s' % password)
             command_args.append(kwargs['input_file'])
 
         # Run command
         startupinfo = None
-        if self._is_os_nt():
+        if is_win():
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
         logger.info('Command: %s' % command_args)
