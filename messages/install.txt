@@ -13,4 +13,4 @@ Geoffrey.
 
 Docs: http://sublimall.org/docs
 Github: https://github.com/socketubs/Sublimall
-Email: hello@socketubs.org
+Email: hello@sublimall.org

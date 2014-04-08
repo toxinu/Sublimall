@@ -15,9 +15,9 @@ New Features
 
 Help
  - You can find information on Github: https://github.com/socketubs/Sublimall
- - On Sublimall website: http://sublimall.socketubs.org/docs
+ - On Sublimall website: http://sublimall.org/docs
  - Create issue on Github
- - Email me: hello@socketubs.org
+ - Email me: hello@sublimall.org
 
 Thank you for testing Sublimall!
 

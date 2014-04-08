@@ -9,6 +9,7 @@ Reminder
 
 New stuff
  - Better error handling in SublimeText status bar
+ - When Sublimall crash, a pane with error is displayed
  - Display archive size in status bar
  - Better 7zip detection
  - Increase http timeout limitation
@@ -17,8 +18,8 @@ New stuff
 Help
  - You can find information on Github: https://github.com/socketubs/Sublimall
  - On Sublimall website: http://sublimall.org/docs
- - Create issue on Github
- - Email me: hello@socketubs.org
+ - Create an issue on Github
+ - Email me: hello@sublimall.org
 
 Thank you for using Sublimall!
 
