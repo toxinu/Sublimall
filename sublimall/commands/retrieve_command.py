@@ -11,6 +11,7 @@ from sublime_plugin import ApplicationCommand
 from .command import CommandWithStatus
 
 from ..logger import logger
+from ..logger import show_report
 from ..archiver import Archiver
 from ..utils import generate_temp_filename
 from .. import requests
@@ -170,6 +171,8 @@ class RetrieveCommand(ApplicationCommand, CommandWithStatus):
                     msg += " - %s" % error
             except:
                 pass
+            show_report('Unhandled Http error while downloading (%s).\n\n%s' % (
+                r.status_code, r.content))
             self.set_timed_message(msg, clear=True, time=10)
             logger.error("HTTP [%s] %s" % (r.status_code, r.content))
 

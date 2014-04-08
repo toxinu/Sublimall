@@ -6,10 +6,11 @@ from sublime_plugin import ApplicationCommand
 
 from .command import CommandWithStatus
 
-from ..logger import logger
-from ..archiver import Archiver
 from .. import requests
 from .. import SETTINGS_USER_FILE
+from ..logger import logger
+from ..logger import show_report
+from ..archiver import Archiver
 from ..utils import humansize
 
 
@@ -56,7 +57,9 @@ class UploadCommand(ApplicationCommand, CommandWithStatus):
                 exclude_from_package_control=self.exclude_from_package_control)
             self.send_to_api()
         except Exception as err:
-            self.set_timed_message(str(err), clear=True)
+            msg = 'Error while creating archive'
+            show_report(msg)
+            self.set_timed_message(msg, clear=True)
             logger.error(err)
             self.post_send(clear=False)
 
@@ -72,7 +75,9 @@ class UploadCommand(ApplicationCommand, CommandWithStatus):
         Send archive file to API
         """
         if not os.path.exists(self.archive_filename):
-            self.set_message("Error while sending archive: archive not found")
+            msg = "Error while sending archive: archive not found"
+            self.set_message(msg)
+            show_report(msg + '\n' + 'Path:%s' % self.archive_filename)
 
         # Just get size
         f = open(self.archive_filename, 'rb')
@@ -131,7 +136,7 @@ class UploadCommand(ApplicationCommand, CommandWithStatus):
         os.unlink(self.archive_filename)
 
         if r.status_code == 201:
-            self.set_timed_message("Successfully sent archive", clear=True)
+            self.set_timed_message("Successfully sent archive", time=10, clear=True)
             logger.info('HTTP [%s] Successfully sent archive' % r.status_code)
         elif r.status_code == 403:
             self.set_timed_message(
@@ -149,6 +154,8 @@ class UploadCommand(ApplicationCommand, CommandWithStatus):
                     msg += " - %s" % error
             except:
                 pass
+            show_report('Unhandled Http error while uploading (%s).\n\n%s' % (
+                r.status_code, r.content))
             self.set_timed_message(msg, clear=True, time=10)
             logger.error('HTTP [%s] %s' % (r.status_code, r.content))
 
