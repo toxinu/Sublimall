@@ -235,6 +235,7 @@ class RetrieveCommand(ApplicationCommand, CommandWithStatus):
             message_lines = [
                 "Sync done.",
                 "Please restart Sublime Text if your configuration is not fully loaded.",
+                "Make a donation at http://sublimall.org/donate !"
             ]
         sublime.message_dialog('\n'.join(message_lines))
 

@@ -5,6 +5,7 @@
     "api_root_url": "http://sublimall.org",
     "api_upload_url": "/api/upload/",
     "api_retrieve_url": "/api/retrieve/",
+    "api_max_package_size_url": "/api/max-package-size/",
 
     ///////////////////////
     //// User settings ////

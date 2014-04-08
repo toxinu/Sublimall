@@ -70,19 +70,60 @@ class UploadCommand(ApplicationCommand, CommandWithStatus):
         self.password = password or None
         sublime.set_timeout_async(self.pack_and_send, 0)
 
+    def get_proxies(self):
+        proxies = {}
+        if self.settings.get('http_proxy', ''):
+            proxies = {'http': self.settings.get('http_proxy')}
+        return proxies
+
+    def get_max_package_size(self):
+        try:
+            r = requests.post(
+                self.api_max_package_size_url,
+                data={'email': self.email, 'api_key': self.api_key},
+                proxies=self.get_proxies())
+            if r.json().get('success'):
+                return r.json().get('output')
+            else:
+                self.set_timed_message("Bad credentials")
+                logger.info('Bad credentials')
+        except Exception as err:
+            self.set_timed_message("Error while retrieving max package size")
+            logger.error(
+                'Server: %s\nHttp code: %s\n'
+                '==========[EXCEPTION]==========\n'
+                '%s\n'
+                '===============================' % (
+                    self.api_max_package_size_url, r.status_code, err))
+
     def send_to_api(self):
         """
         Send archive file to API
         """
         if not os.path.exists(self.archive_filename):
             msg = "Error while sending archive: archive not found"
-            self.set_message(msg)
+            self.set_timed_message(msg)
             show_report(msg + '\n' + 'Path:%s' % self.archive_filename)
+            self.running = False
+            return
 
         # Just get size
         f = open(self.archive_filename, 'rb')
         f.seek(0, 2)
-        self.set_message("Sending archive (%s)..." % humansize(f.tell()))
+
+        # Retrieve max package size
+        package_size = f.tell()
+        max_package_size = self.get_max_package_size()
+        if max_package_size is None:
+            self.is_running = False
+            return
+        if package_size > int(max_package_size):
+            self.set_timed_message('Archive too big. %s instead of %s max.' % (
+                humansize(package_size), humansize(max_package_size)))
+            self.running = False
+            return
+
+        self.set_message("Sending archive (%s)..." % humansize(package_size))
 
         # Really open file
         f = open(self.archive_filename, 'rb')
@@ -97,14 +138,11 @@ class UploadCommand(ApplicationCommand, CommandWithStatus):
         }
 
         # Send data and delete temporary file
-        proxies = {}
-        if self.settings.get('http_proxy', ''):
-            proxies = {'http': self.settings.get('http_proxy')}
         try:
             r = requests.post(
                 url=self.api_upload_url,
                 files=files,
-                proxies=proxies,
+                proxies=self.get_proxies(),
                 timeout=self.settings.get('http_upload_timeout'))
         except requests.exceptions.ConnectionError as err:
             self.set_timed_message(
@@ -131,12 +169,25 @@ class UploadCommand(ApplicationCommand, CommandWithStatus):
                 '===============================' % (
                     self.api_upload_url, err))
             return
+        except Exception as err:
+            self.set_timed_message(
+                "Error while sending archive\n", clear=True)
+            self.running = False
+            logger.error(
+                'Server: %s\nHttp code: %s\n'
+                '==========[EXCEPTION]==========\n'
+                '%s\n'
+                '===============================' % (
+                    self.api_upload_url, r.status_code, err))
 
         f.close()
         os.unlink(self.archive_filename)
 
         if r.status_code == 201:
-            self.set_timed_message("Successfully sent archive", time=10, clear=True)
+            self.set_timed_message(
+                "Successfully sent archive. Make a donation at http://sublimall.org/donate !",
+                time=10,
+                clear=True)
             logger.info('HTTP [%s] Successfully sent archive' % r.status_code)
         elif r.status_code == 403:
             self.set_timed_message(
@@ -173,6 +224,9 @@ class UploadCommand(ApplicationCommand, CommandWithStatus):
         self.settings = sublime.load_settings(SETTINGS_USER_FILE)
         self.api_upload_url = urljoin(
             self.settings.get('api_root_url'), self.settings.get('api_upload_url'))
+        self.api_max_package_size_url = urljoin(
+            self.settings.get('api_root_url'),
+            self.settings.get('api_max_package_size_url'))
 
         logger.info('Starting upload')
 
