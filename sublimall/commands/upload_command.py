@@ -12,6 +12,7 @@ from ..logger import logger
 from ..logger import show_report
 from ..archiver import Archiver
 from ..utils import humansize
+from ..utils import get_headers
 
 
 class UploadCommand(ApplicationCommand, CommandWithStatus):
@@ -80,6 +81,7 @@ class UploadCommand(ApplicationCommand, CommandWithStatus):
         try:
             r = requests.post(
                 self.api_max_package_size_url,
+                headers=get_headers(),
                 data={'email': self.email, 'api_key': self.api_key},
                 proxies=self.get_proxies())
             if r.json().get('success'):
@@ -142,6 +144,7 @@ class UploadCommand(ApplicationCommand, CommandWithStatus):
             r = requests.post(
                 url=self.api_upload_url,
                 files=files,
+                headers=get_headers(),
                 proxies=self.get_proxies(),
                 timeout=self.settings.get('http_upload_timeout'))
         except requests.exceptions.ConnectionError as err:

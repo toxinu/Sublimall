@@ -13,6 +13,7 @@ from .command import CommandWithStatus
 from ..logger import logger
 from ..logger import show_report
 from ..archiver import Archiver
+from ..utils import get_headers
 from ..utils import generate_temp_filename
 from .. import requests
 from .. import SETTINGS_USER_FILE
@@ -109,6 +110,7 @@ class RetrieveCommand(ApplicationCommand, CommandWithStatus):
             r = requests.post(
                 url=self.api_retrieve_url,
                 data=data,
+                headers=get_headers(),
                 stream=True,
                 proxies=proxies,
                 timeout=self.settings.get('http_download_timeout'))
