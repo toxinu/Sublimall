@@ -14,6 +14,7 @@ New stuff
  - Display archive size in status bar
  - Better 7zip detection
  - Increase http timeout limitation
+ - Sublimall now use new User-Agent (sublimall-__version__ platform.platform())
  - Some bug fixes
 
 Help
