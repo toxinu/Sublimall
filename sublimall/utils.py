@@ -6,8 +6,6 @@ import shutil
 import sublime
 import tempfile
 import platform
-from subprocess import PIPE
-from subprocess import Popen
 from . import SETTINGS_USER_FILE
 from .logger import logger
 
@@ -49,16 +47,16 @@ def get_7za_bin():
     elif shutil.which('p7zip'):
         zip_bin = shutil.which('p7zip')
     elif is_win():
-        if os.path.exists(os.path.join(os.environ.get('ProgramFiles'), '7-Zip', '7z.exe')):
+        if os.path.exists(os.path.join(
+                os.environ.get('ProgramFiles'), '7-Zip', '7z.exe')):
             zip_bin = os.path.join(os.environ.get('ProgramFiles'), '7-Zip', '7z.exe')
-        if os.path.exists(os.path.join(os.environ.get('ProgramFiles(x86)'), '7-Zip', '7z.exe')):
+        if os.path.exists(os.path.join(
+                os.environ.get('ProgramFiles(x86)'), '7-Zip', '7z.exe')):
             zip_bin = os.path.join(os.environ.get('ProgramFiles(x86)'), '7-Zip', '7z.exe')
     elif is_osx():
-        basename_cmd = "readlink -m /usr/local/Cellar/p7zip/*/bin/7za"
-        c = Popen(basename_cmd, shell=True, stdin=PIPE)
-        zip_path = c.communicate()[0].replace('\n', '')
-        if zip_path:
-            zip_bin = zip_path
+        za_path = "/usr/local/Cellar/p7zip/9.20.1/bin/7za"
+        if os.path.exists(za_path):
+            zip_bin = za_path
 
     logger.info('7za_path detected: %s' % zip_bin)
     return zip_bin
