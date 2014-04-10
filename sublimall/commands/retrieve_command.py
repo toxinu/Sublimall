@@ -22,7 +22,7 @@ from .. import SETTINGS_USER_FILE
 class RetrieveCommand(ApplicationCommand, CommandWithStatus):
 
     def __init__(self, *args, **kwargs):
-        super(RetrieveCommand, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.stream = None
         self.running = False
         self.password = None

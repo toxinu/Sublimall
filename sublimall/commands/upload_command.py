@@ -17,7 +17,7 @@ from ..utils import get_headers
 
 class UploadCommand(ApplicationCommand, CommandWithStatus):
     def __init__(self, *args, **kwargs):
-        super(UploadCommand, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.running = False
         self.password = None
         self.archive_filename = None

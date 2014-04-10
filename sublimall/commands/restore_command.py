@@ -13,7 +13,7 @@ from .. import SETTINGS_USER_FILE
 
 class RestoreCommand(ApplicationCommand, CommandWithStatus):
     def __init__(self, *args, **kwargs):
-        super(RestoreCommand, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.running = False
 
     def restore(self, index):
