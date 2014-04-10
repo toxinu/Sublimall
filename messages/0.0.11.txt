@@ -1,6 +1,7 @@
 Sublimall 0.0.11 Changelog:
 
 Reminder
+ - Sublimall is free to use, donation are welcome!
  - Sublimall need to have 7zip installed on your system as requirement (see help at the end)
  - Sublimall is only compatible with SublimeText3
  - Sublimall is in alpha stage, so backup your configuration
@@ -13,7 +14,8 @@ New stuff
  - When Sublimall crash, a pane with error is displayed
  - Display archive size in status bar
  - Better 7zip detection
- - Increase http timeout limitation
+ - Hardcode 7za path for OSX (with homebrew binary)
+ - Increase http timeout
  - Sublimall now use new User-Agent (sublimall-__version__ platform.platform())
  - Some bug fixes
 
