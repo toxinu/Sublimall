@@ -18,8 +18,8 @@ New stuff
  - Some bug fixes
 
 Help
- - You can find information on Github: https://github.com/socketubs/Sublimall
  - On Sublimall website: http://sublimall.org/docs
+ - You can find information on Github: https://github.com/socketubs/Sublimall
  - Create an issue on Github
  - Email me: hello@sublimall.org
 
