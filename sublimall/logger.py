@@ -8,9 +8,12 @@ import platform
 import traceback
 from os.path import expanduser
 
+from .utils import get_7za_bin
+
 
 report_footer = """\n
 SublimeText version: %s
+7za path: %s
 Operating System: %s\n\n
 Sorry about this error, you could find some help on:
 - Github: https://github.com/socketubs/Sublimall/issues
@@ -19,7 +22,7 @@ Sorry about this error, you could find some help on:
 - SublimeText console
 Or maybe open an issue.
 
-Geoffrey.""" % (sublime.version(), platform.platform())
+Geoffrey.""" % (sublime.version(), get_7za_bin(), platform.platform())
 
 logger = logging.getLogger('sublimall')
 if not logger.handlers:
