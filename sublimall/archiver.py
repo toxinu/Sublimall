@@ -96,23 +96,35 @@ class Archiver:
 
         # Run command
         startupinfo = None
+        extra_args = {}
         if is_win():
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        logger.info('Command: %s' % command_args)
+        # else:
+            # extra_args.update({'close_fds': True})
+
+        # Remove passphrase from log
+        log_args = []
+        for a in command_args:
+            if a.startswith('-p'):
+                log_args.append('%s%s' % (a[:2], '*' * len(a[2:])))
+            else:
+                log_args.append(a)
+
+        logger.info('Command: %s' % log_args)
         process = subprocess.Popen(
             command_args,
             startupinfo=startupinfo,
             stdout=PIPE,
             stderr=PIPE,
-            close_fds=True)
+            **extra_args)
         output = process.communicate()
         exitcode = process.wait()
 
         if exitcode > 0:
             msg = 'Error while runing p7zip (exit code: %s)' % exitcode
             logger.error(msg)
-            logger.error('Command: %s' % command_args)
+            logger.error('Command: %s' % log_args)
             logger.error('Output:\n %s' % str(output))
             raise Exception(msg)
 
