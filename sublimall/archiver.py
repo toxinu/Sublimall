@@ -100,8 +100,8 @@ class Archiver:
         if is_win():
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        # else:
-            # extra_args.update({'close_fds': True})
+        else:
+            extra_args.update({'close_fds': True})
 
         # Remove passphrase from log
         log_args = []
