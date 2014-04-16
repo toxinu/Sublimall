@@ -8,7 +8,6 @@ import tempfile
 import platform
 from . import __version__
 from . import SETTINGS_USER_FILE
-from .logger import logger
 
 
 def get_headers():
@@ -40,6 +39,8 @@ def humansize(nbytes):
 
 
 def get_7za_bin():
+    from .logger import logger
+
     settings = sublime.load_settings(SETTINGS_USER_FILE)
     zip_bin = None
 
