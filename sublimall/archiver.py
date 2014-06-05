@@ -122,7 +122,7 @@ class Archiver:
         exitcode = process.wait()
 
         if exitcode > 0:
-            msg = 'Error while runing p7zip (exit code: %s)' % exitcode
+            msg = 'Error while running p7zip (exit code: %s)' % exitcode
             logger.error(msg)
             logger.error('Command: %s' % log_args)
             logger.error('Output:\n %s' % str(output))
