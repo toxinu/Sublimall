@@ -1,8 +1,6 @@
 Sublimall
 =========
 
-[![Gitter chat](https://badges.gitter.im/socketubs/Sublimall.png)](https://gitter.im/socketubs/Sublimall)
-
 **Warning**: Sublimall is only for Sublime Text 3!
 
 Sublimall is the way to sync and save your SublimeText configuration everywhere. Just create an account, install the plugin and that's all.
