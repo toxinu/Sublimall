@@ -229,7 +229,7 @@ class RetrieveCommand(ApplicationCommand, CommandWithStatus):
             message_lines = [
                 "Package Control has been detected.",
                 "If your configuration is not yet fully loaded, please restart "
-                "Sublimeall and wait for Package Control to install missing packages.",
+                "Sublimall and wait for Package Control to install missing packages.",
                 "You might have to restart Sublime another time if "
                 "themes are not correctly loaded."
             ]
