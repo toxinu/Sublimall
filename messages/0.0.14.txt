@@ -1,0 +1,20 @@
+Sublimall 0.0.14 Changelog:
+
+Reminder
+ - Sublimall is free to use, donation are welcome!
+ - Sublimall server code source is on Github!
+
+New stuff
+ - Website is now in https (https://sublimall.org)
+ - SublimeText plugin now use https too
+ - Some bug fixes
+
+Help
+ - On Sublimall website: https://sublimall.org/docs
+ - You can find information on Github: https://github.com/socketubs/Sublimall
+ - Create an issue on Github
+ - Email me: hello@sublimall.org
+
+Thank you for using Sublimall!
+
+Geoffrey.
