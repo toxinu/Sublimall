@@ -43,3 +43,8 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
+#############################################################################
+Sublimall.py (ssl lib loading) is okay to use for open source project:
+ - https://sublimetext.userecho.com/topic/50801-bundle-python-ssl-module/#comment-165814
+ "Yes, you can use the compiled _ssl modules and the code
+ from line 11-31 of SFTP.py for an open source package."
