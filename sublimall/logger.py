@@ -8,19 +8,22 @@ import platform
 import traceback
 from os.path import expanduser
 
+from . import __version__
+
 
 report_footer = """\n
 SublimeText version: {sublime_version}
 7za path: {bin_7za}
+Sublimall version: {sublimall_version}
 Operating System: {operating_system}\n\n
 Sorry about this error, you could find some help on:
 - Github: https://github.com/socketubs/Sublimall/issues
-- Doc: http://sublimall.org/docs
+- Doc: https://sublimall.org/docs
 - Log file: ~/.sublimall.log
 - SublimeText console
 Or maybe open an issue.
 
-Geoffrey."""
+Socketubs."""
 
 logger = logging.getLogger('sublimall')
 if not logger.handlers:
@@ -67,5 +70,6 @@ def show_report(subtitle, message=None, exception=True):
         f.write(report_footer.format(
             sublime_version=sublime.version(),
             bin_7za=get_7za_bin(),
+            sublimall_version=__version__,
             operating_system=platform.platform()))
     sublime.active_window().open_file(report_path)
