@@ -21,12 +21,10 @@ mod_prefix = 'Sublimall.sublimall'
 
 mods_load_order = [
     '',
-
-    '.utils',
-    '.logger',
     '.archiver',
-    '.settings',
     '.blacklist',
+    '.logger',
+    '.utils',
 
     '.commands',
     '.commands.command',
