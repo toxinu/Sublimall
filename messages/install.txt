@@ -1,5 +1,5 @@
 Thank you for installing Sublimall!
-Sublimall is the way to synchronize your SublimelText configuration everywhere.
+Sublimall is the way to synchronize your SublimeText configuration everywhere.
 
 First steps
 ===========
