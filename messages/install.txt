@@ -5,12 +5,11 @@ First steps
 ===========
 
 In order to use Sublimall you just need one dependency, 7zip installed on your system.
-You have to know that Sublimall is in alpha stage, so please backup your files before.
 
 Give me feedback!
 
 Geoffrey.
 
-Docs: http://sublimall.org/docs
+Docs: https://sublimall.org/docs
 Github: https://github.com/socketubs/Sublimall
 Email: hello@sublimall.org
