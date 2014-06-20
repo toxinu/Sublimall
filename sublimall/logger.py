@@ -18,7 +18,7 @@ Sublimall version: {sublimall_version}
 Operating System: {operating_system}\n\n
 Sorry about this error, you could find some help on:
 - Github: https://github.com/socketubs/Sublimall/issues
-- Doc: https://sublimall.org/docs
+- Doc: http://sublimall.org/docs
 - Log file: ~/.sublimall.log
 - SublimeText console
 Or maybe open an issue.

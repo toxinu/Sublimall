@@ -87,7 +87,7 @@ class UploadCommand(ApplicationCommand, CommandWithStatus):
             if r.json().get('success'):
                 return r.json().get('output')
             else:
-                self.set_timed_message("Bad credentials")
+                self.set_timed_message("Bad credentials", clear=True)
                 logger.info('Bad credentials')
         except Exception as err:
             self.set_timed_message("Error while retrieving max package size")

@@ -5,12 +5,12 @@ Reminder
  - Sublimall server code source is on Github!
 
 New stuff
- - Website is now in https (https://sublimall.org)
+ - Website is now in https (http://sublimall.org)
  - SublimeText plugin now use https too
  - Some bug fixes
 
 Help
- - On Sublimall website: https://sublimall.org/docs
+ - On Sublimall website: http://sublimall.org/docs
  - You can find information on Github: https://github.com/socketubs/Sublimall
  - Create an issue on Github
  - Email me: hello@sublimall.org

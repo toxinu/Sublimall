@@ -4,7 +4,7 @@
 pythoncompat
 """
 
-from .packages import chardet
+from .packages import charade as chardet
 
 import sys
 

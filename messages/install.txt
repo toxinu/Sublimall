@@ -10,6 +10,6 @@ Give me feedback!
 
 Geoffrey.
 
-Docs: https://sublimall.org/docs
+Docs: http://sublimall.org/docs
 Github: https://github.com/socketubs/Sublimall
 Email: hello@sublimall.org

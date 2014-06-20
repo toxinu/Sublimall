@@ -23,7 +23,7 @@ from . import exceptions
 from .filepost import encode_multipart_formdata
 from .poolmanager import PoolManager, ProxyManager, proxy_from_url
 from .response import HTTPResponse
-from .util import make_headers, get_host, Timeout
+from .util import make_headers, get_host
 
 
 # Set default logging handler to avoid "No handler found" warnings.

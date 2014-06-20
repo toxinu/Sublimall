@@ -45,6 +45,7 @@ class RequestMethods(object):
     """
 
     _encode_url_methods = set(['DELETE', 'GET', 'HEAD', 'OPTIONS'])
+    _encode_body_methods = set(['PATCH', 'POST', 'PUT', 'TRACE'])
 
     def __init__(self, headers=None):
         self.headers = headers or {}

@@ -9,7 +9,6 @@ import logging
 import zlib
 import io
 
-from ._collections import HTTPHeaderDict
 from .exceptions import DecodeError
 from .packages.six import string_types as basestring, binary_type
 from .util import is_fp_closed
@@ -75,15 +74,11 @@ class HTTPResponse(io.IOBase):
     """
 
     CONTENT_DECODERS = ['gzip', 'deflate']
-    REDIRECT_STATUSES = [301, 302, 303, 307, 308]
 
     def __init__(self, body='', headers=None, status=0, version=0, reason=None,
                  strict=0, preload_content=True, decode_content=True,
                  original_response=None, pool=None, connection=None):
-
-        self.headers = HTTPHeaderDict()
-        if headers:
-            self.headers.update(headers)
+        self.headers = headers or {}
         self.status = status
         self.version = version
         self.reason = reason
@@ -94,7 +89,6 @@ class HTTPResponse(io.IOBase):
         self._body = body if body and isinstance(body, basestring) else None
         self._fp = None
         self._original_response = original_response
-        self._fp_bytes_read = 0
 
         self._pool = pool
         self._connection = connection
@@ -113,7 +107,7 @@ class HTTPResponse(io.IOBase):
             code and valid location. ``None`` if redirect status and no
             location. ``False`` if not a redirect status code.
         """
-        if self.status in self.REDIRECT_STATUSES:
+        if self.status in [301, 302, 303, 307]:
             return self.headers.get('location')
 
         return False
@@ -133,14 +127,6 @@ class HTTPResponse(io.IOBase):
 
         if self._fp:
             return self.read(cache_content=True)
-
-    def tell(self):
-        """
-        Obtain the number of bytes pulled over the wire so far. May differ from
-        the amount of content returned by :meth:``HTTPResponse.read`` if bytes
-        are encoded on the wire (e.g, compressed).
-        """
-        return self._fp_bytes_read
 
     def read(self, amt=None, decode_content=None, cache_content=False):
         """
@@ -196,8 +182,6 @@ class HTTPResponse(io.IOBase):
                     self._fp.close()
                     flush_decoder = True
 
-            self._fp_bytes_read += len(data)
-
             try:
                 if decode_content and self._decoder:
                     data = self._decoder.decompress(data)
@@ -207,7 +191,7 @@ class HTTPResponse(io.IOBase):
                     "failed to decode it." % content_encoding,
                     e)
 
-            if flush_decoder and decode_content and self._decoder:
+            if flush_decoder and self._decoder:
                 buf = self._decoder.decompress(binary_type())
                 data += buf + self._decoder.flush()
 
@@ -253,9 +237,17 @@ class HTTPResponse(io.IOBase):
         with ``original_response=r``.
         """
 
-        headers = HTTPHeaderDict()
+        # Normalize headers between different versions of Python
+        headers = {}
         for k, v in r.getheaders():
-            headers.add(k, v)
+            # Python 3: Header keys are returned capitalised
+            k = k.lower()
+
+            has_value = headers.get(k)
+            if has_value: # Python 3: Repeating header keys are unmerged.
+                v = ', '.join([has_value, v])
+
+            headers[k] = v
 
         # HTTPResponse objects in Python 3 don't have a .strict attribute
         strict = getattr(r, 'strict', 0)

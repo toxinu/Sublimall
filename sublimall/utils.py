@@ -6,11 +6,11 @@ import shutil
 import sublime
 import tempfile
 import platform
-from . import __version__
 from . import SETTINGS_USER_FILE
 
 
 def get_headers():
+    from . import __version__
     return {'User-Agent': 'sublimall-%s %s' % (__version__, platform.platform())}
 
 
