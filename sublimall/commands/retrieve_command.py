@@ -9,6 +9,7 @@ from urllib.parse import urljoin
 from sublime_plugin import ApplicationCommand
 
 from .command import CommandWithStatus
+from .command import CommandWithHiddenPrompt
 
 from ..logger import logger
 from ..logger import show_report
@@ -19,14 +20,16 @@ from .. import requests
 from .. import SETTINGS_USER_FILE
 
 
-class RetrieveCommand(ApplicationCommand, CommandWithStatus):
-
+class RetrieveCommand(
+        ApplicationCommand, CommandWithHiddenPrompt, CommandWithStatus):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.stream = None
         self.running = False
-        self.password = None
         self.archive_filename = None
+        self.prompt_label = "Enter archive passphrase (will be hidden)"
+        self.on_done_callback = self.check_zipfile
+        self.on_cancel_callback = self.abort
 
     def _package_control_has_packages(self):
         """
@@ -44,7 +47,6 @@ class RetrieveCommand(ApplicationCommand, CommandWithStatus):
         os.unlink(self.archive_filename)
         self.stream = None
         self.running = False
-        self.password = None
         self.archive_filename = None
 
     def abort(self):
@@ -55,41 +57,33 @@ class RetrieveCommand(ApplicationCommand, CommandWithStatus):
         logger.warn('No password supplied. Aborting...')
         self.post_unpack()
 
-    def prompt_password(self):
-        """
-        Shows an input panel for entering password
-        """
-        sublime.active_window().show_input_panel(
-            "Enter archive password",
-            initial_text='',
-            on_done=self.check_zipfile,
-            on_cancel=self.abort,
-            on_change=None
-        )
-
     def check_zipfile(self, password=None, first_try=False):
         """
         Check if stream is an unprotected zipfile
         If retry set to True, loop one more time
         """
+        password = self.prompt_value
         # Try opening the zipfile to check password
         try:
             if password is not None:
-                self.set_message("Trying to decrypt your archive. Please wait.")
+                self.set_message(
+                    "Trying to decrypt your archive. Please wait.")
                 self.zf.setpassword(password.encode())
             self.zf.testzip()
         except RuntimeError:
             if first_try:
-                self.set_message("Archive is protected. Please enter password.")
+                self.set_message(
+                    "Archive is protected. Please enter password.")
                 logger.info('Archive is protected with a passphrase')
             else:
                 self.set_message("Wrong password")
                 logger.info('Bad passphrase')
-            self.prompt_password()
+            self.show_prompt()
         else:
-            self.password = password
             self.zf.close()
             self.set_message("Archive decrypted. Applying configuration.")
+            sublime.message_dialog('THIS IS BLOKK')
+
             sublime.set_timeout_async(self.unpack, 0)
 
     def retrieve_from_server(self):
@@ -116,7 +110,8 @@ class RetrieveCommand(ApplicationCommand, CommandWithStatus):
                 timeout=self.settings.get('http_download_timeout'))
         except requests.exceptions.ConnectionError as err:
             self.set_timed_message(
-                "Error while retrieving archive: server not available, try later",
+                "Error while retrieving archive: "
+                "server not available, try later",
                 clear=True)
             self.running = False
             logger.error(
@@ -152,12 +147,14 @@ class RetrieveCommand(ApplicationCommand, CommandWithStatus):
             shutil.copyfileobj(r.raw, self.stream)
             self.stream.close()
 
-            # Had some mysterious problems using in memory stream so re-open file instead
+            # Had some mysterious problems using in
+            # memory stream so re-open file instead
             self.zf = zipfile.ZipFile(self.archive_filename, 'r')
             self.check_zipfile(first_try=True)
         elif r.status_code == 403:
             self.set_timed_message(
-                "Error while requesting archive: wrong credentials", clear=True)
+                "Error while requesting archive: wrong credentials",
+                clear=True)
             logger.info('HTTP [%s] Bad credentials' % r.status_code)
         elif r.status_code == 404:
             self.set_timed_message(
@@ -173,8 +170,9 @@ class RetrieveCommand(ApplicationCommand, CommandWithStatus):
                     msg += " - %s" % error
             except:
                 pass
-            show_report('Unhandled Http error while downloading (%s).\n\n%s' % (
-                r.status_code, r.content))
+            show_report(
+                'Unhandled Http error while '
+                'downloading (%s).\n\n%s' % (r.status_code, r.content))
             self.set_timed_message(msg, clear=True, time=10)
             logger.error("HTTP [%s] %s" % (r.status_code, r.content))
 
@@ -190,7 +188,9 @@ class RetrieveCommand(ApplicationCommand, CommandWithStatus):
             'Sublimall',
             'Backup')
         backup_path = os.path.join(backup_dir_path, '%s.zip' % time.time())
-        logger.info('Create backup in Sublimall %s of actual configuration' % backup_path)
+        logger.info(
+            'Create backup in Sublimall %s of '
+            'actual configuration' % backup_path)
         try:
             if not os.path.exists(backup_dir_path):
                 os.makedirs(backup_dir_path)
@@ -216,7 +216,8 @@ class RetrieveCommand(ApplicationCommand, CommandWithStatus):
         # Unpack backup
         self.set_message(u"Extracting archive...")
         logger.info('Extracting archive')
-        archiver.unpack_packages(self.archive_filename, password=self.password)
+        archiver.unpack_packages(
+            self.archive_filename, password=self.prompt_value)
 
         # Delete moved directories
         self.set_message(u"Deleting old directories...")
@@ -262,11 +263,15 @@ class RetrieveCommand(ApplicationCommand, CommandWithStatus):
 
         if not self.email or not self.api_key:
             self.set_timed_message(
-                "api_key or email is missing in your Sublimall configuration", clear=True)
-            logger.warn('API key or email is missing in configuration file. Abort')
+                "api_key or email is missing in your Sublimall configuration",
+                clear=True)
+            logger.warn(
+                'API key or email is missing in '
+                'configuration file. Abort')
             return
 
         self.api_retrieve_url = urljoin(
-            self.settings.get('api_root_url'), self.settings.get('api_retrieve_url'))
+            self.settings.get(
+                'api_root_url'), self.settings.get('api_retrieve_url'))
 
         sublime.set_timeout_async(self.start, 0)

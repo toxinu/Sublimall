@@ -27,6 +27,7 @@ class CommandWithStatus(object):
     def __init__(self, *args, **kwargs):
         self._messageStatus = MessageStatus()
         sublime.set_timeout(lambda: self.unset_message, 1000)
+        super().__init__(*args, **kwargs)
 
     def set_timed_message(self, message, time=7, clear=False):
         """
@@ -54,3 +55,42 @@ class CommandWithStatus(object):
         status message bar.
         """
         self._messageStatus.is_running = False
+
+
+class CommandWithHiddenPrompt(object):
+    def __init__(self, *args, **kwargs):
+        self.prompt_value = ''
+        super().__init__(*args, **kwargs)
+
+    def show_prompt(self, p=''):
+        """
+        Shows an input panel for entering password
+        """
+        self.view = sublime.active_window().show_input_panel(
+            self.prompt_label,
+            initial_text=p,
+            on_done=self.on_done_callback,
+            on_cancel=self.on_cancel_callback,
+            on_change=self.on_change_callback
+        )
+
+    def on_change_callback(self, p):
+        if p and len(p) != len(self.prompt_value):
+            # Erase character
+            if len(p) < len(self.prompt_value):
+                delta = len(self.prompt_value) - len(p)
+                if delta > 1:
+                    self.prompt_value = p[-1]
+                else:
+                    self.prompt_value = self.prompt_value[0:-delta]
+            # Add character
+            else:
+                self.prompt_value += p[-1]
+
+            if self.view:
+                self.view.close()
+            self.show_prompt('*' * len(self.prompt_value))
+        elif not p and (
+                len(self.prompt_value) == 1 or self.prompt_value is None):
+            self.prompt_value = ''
+            self.show_prompt()

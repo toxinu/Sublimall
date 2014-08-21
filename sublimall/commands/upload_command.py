@@ -5,6 +5,7 @@ from urllib.parse import urljoin
 from sublime_plugin import ApplicationCommand
 
 from .command import CommandWithStatus
+from .command import CommandWithHiddenPrompt
 
 from .. import requests
 from .. import SETTINGS_USER_FILE
@@ -15,12 +16,16 @@ from ..utils import humansize
 from ..utils import get_headers
 
 
-class UploadCommand(ApplicationCommand, CommandWithStatus):
+class UploadCommand(
+        ApplicationCommand, CommandWithHiddenPrompt, CommandWithStatus):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.running = False
-        self.password = None
         self.archive_filename = None
+        self.view = None
+        self.prompt_label = "Enter archive passphrase (will be hidden)"
+        self.on_done_callback = self.pack_and_send_async
+        self.on_cancel_callback = self.pack_and_send_async
 
     def post_send(self, clear=True):
         """
@@ -29,21 +34,7 @@ class UploadCommand(ApplicationCommand, CommandWithStatus):
         if clear:
             self.unset_message()
         self.running = False
-        self.password = None
         self.archive_filename = None
-
-    def prompt_password(self):
-        """
-        Shows an input panel for entering password
-        """
-        logger.info('Prompt archive passphrase')
-        sublime.active_window().show_input_panel(
-            "Enter archive passphrase",
-            initial_text='',
-            on_done=self.pack_and_send_async,
-            on_cancel=self.pack_and_send_async,
-            on_change=None
-        )
 
     def pack_and_send(self):
         """
@@ -54,7 +45,7 @@ class UploadCommand(ApplicationCommand, CommandWithStatus):
         archiver = Archiver()
         try:
             self.archive_filename = archiver.pack_packages(
-                password=self.password,
+                password=self.prompt_value,
                 exclude_from_package_control=self.exclude_from_package_control)
             self.send_to_api()
         except Exception as err:
@@ -64,11 +55,10 @@ class UploadCommand(ApplicationCommand, CommandWithStatus):
             logger.error(err)
             self.post_send(clear=False)
 
-    def pack_and_send_async(self, password=None):
+    def pack_and_send_async(self, password=''):
         """
         Starts ansync command
         """
-        self.password = password or None
         sublime.set_timeout_async(self.pack_and_send, 0)
 
     def get_proxies(self):
@@ -105,7 +95,9 @@ class UploadCommand(ApplicationCommand, CommandWithStatus):
         if not os.path.exists(self.archive_filename):
             msg = "Error while sending archive: archive not found"
             self.set_timed_message(msg)
-            show_report(msg + '\n' + 'Path:%s' % self.archive_filename, exception=False)
+            show_report(
+                msg + '\n' + 'Path:%s' % self.archive_filename,
+                exception=False)
             self.running = False
             return
 
@@ -117,7 +109,7 @@ class UploadCommand(ApplicationCommand, CommandWithStatus):
         package_size = f.tell()
         max_package_size = self.get_max_package_size()
         if max_package_size is None:
-            self.is_running = False
+            self.running = False
             return
         if package_size > int(max_package_size):
             self.set_timed_message('Archive too big. %s instead of %s max.' % (
@@ -188,7 +180,8 @@ class UploadCommand(ApplicationCommand, CommandWithStatus):
 
         if r.status_code == 201:
             self.set_timed_message(
-                "Successfully sent archive. Make a donation at http://sublimall.org/donate !",
+                "Successfully sent archive. Make a donation at "
+                "http://sublimall.org/donate !",
                 time=10,
                 clear=True)
             logger.info('HTTP [%s] Successfully sent archive' % r.status_code)
@@ -198,7 +191,8 @@ class UploadCommand(ApplicationCommand, CommandWithStatus):
             logger.info('HTTP [%s] Bad credentials' % r.status_code)
         elif r.status_code == 413:
             self.set_timed_message(
-                "Error while sending archive: filesize too large (>30MB)", clear=True)
+                "Error while sending archive: filesize too large (>30MB)",
+                clear=True)
             logger.error("HTTP [%s] %s" % (r.status_code, r.content))
         else:
             msg = "Unexpected error (HTTP STATUS: %s)" % r.status_code
@@ -226,7 +220,8 @@ class UploadCommand(ApplicationCommand, CommandWithStatus):
 
         self.settings = sublime.load_settings(SETTINGS_USER_FILE)
         self.api_upload_url = urljoin(
-            self.settings.get('api_root_url'), self.settings.get('api_upload_url'))
+            self.settings.get('api_root_url'),
+            self.settings.get('api_upload_url'))
         self.api_max_package_size_url = urljoin(
             self.settings.get('api_root_url'),
             self.settings.get('api_max_package_size_url'))
@@ -241,14 +236,17 @@ class UploadCommand(ApplicationCommand, CommandWithStatus):
 
         if not self.email or not self.api_key:
             self.set_timed_message(
-                "api_key or email is missing in your Sublimall configuration", clear=True)
-            logger.warn('API key or email is missing in configuration file. Abort')
+                "api_key or email is missing in your"
+                " Sublimall configuration", clear=True)
+            logger.warn(
+                'API key or email is missing in configuration file. Abort')
             return
 
         self.running = True
 
         logger.info('Encrypt enabled')
         if self.encrypt:
-            self.prompt_password()
+            logger.info('Prompt archive passphrase')
+            self.show_prompt()
         else:
             self.pack_and_send_async()
