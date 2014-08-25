@@ -11,7 +11,8 @@ from . import SETTINGS_USER_FILE
 
 def get_headers():
     from . import __version__
-    return {'User-Agent': 'sublimall-%s %s' % (__version__, platform.platform())}
+    return {
+        'User-Agent': 'sublimall-%s %s' % (__version__, platform.platform())}
 
 
 def is_linux():
@@ -44,7 +45,10 @@ def get_7za_bin():
     settings = sublime.load_settings(SETTINGS_USER_FILE)
     zip_bin = None
 
-    if settings.get('7za_path') and os.path.exists(settings.get('7za_path')):
+    # If 7za_path is set, exists and is a file
+    if settings.get('7za_path') and os.path.exists(
+            settings.get('7za_path')) and os.path.isfile(
+            settings.get('7za_path')):
         zip_bin = settings.get('7za_path')
     elif shutil.which('7za'):
         zip_bin = shutil.which('7za')
@@ -55,10 +59,12 @@ def get_7za_bin():
     elif is_win():
         if os.path.exists(os.path.join(
                 os.environ.get('ProgramFiles'), '7-Zip', '7z.exe')):
-            zip_bin = os.path.join(os.environ.get('ProgramFiles'), '7-Zip', '7z.exe')
+            zip_bin = os.path.join(
+                os.environ.get('ProgramFiles'), '7-Zip', '7z.exe')
         if os.path.exists(os.path.join(
                 os.environ.get('ProgramFiles(x86)'), '7-Zip', '7z.exe')):
-            zip_bin = os.path.join(os.environ.get('ProgramFiles(x86)'), '7-Zip', '7z.exe')
+            zip_bin = os.path.join(
+                os.environ.get('ProgramFiles(x86)'), '7-Zip', '7z.exe')
     elif is_osx():
         za_path = "/usr/local/Cellar/p7zip/9.20.1/bin/7za"
         if os.path.exists(za_path):
@@ -69,4 +75,5 @@ def get_7za_bin():
 
 
 def generate_temp_filename():
-    return os.path.join(tempfile.gettempdir(), 'sublime-sync_%s.zip' % str(uuid.uuid4()))
+    return os.path.join(
+        tempfile.gettempdir(), 'sublime-sync_%s.zip' % str(uuid.uuid4()))
