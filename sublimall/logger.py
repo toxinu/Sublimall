@@ -31,7 +31,8 @@ if not logger.handlers:
     fh = logging.FileHandler(os.path.join(expanduser("~"), '.sublimall.log'))
     fh.setLevel(logging.DEBUG)
     formatter = logging.Formatter(
-        '%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+        '%(asctime)s - %(levelname)s - %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S')
     fh.setFormatter(formatter)
     logger.addHandler(fh)
 
@@ -41,7 +42,8 @@ def get_report_path():
     now = time.strftime("%Y%m%d-%H%M%S")
     report_path = None
     while not report_path:
-        p = os.path.join(tempfile.gettempdir(), 'sublimall-%s-%s.log' % (now, report_id))
+        p = os.path.join(tempfile.gettempdir(), 'sublimall-%s-%s.log' % (
+            now, report_id))
         if not os.path.exists(p):
             report_path = p
         else:
@@ -64,7 +66,8 @@ def show_report(subtitle, message=None, exception=True):
         if exception:
             f.write('\n')
             f.write(
-                '=' * 35 + ' Traceback ' + '=' * 35 + '\n' + traceback.format_exc())
+                '=' * 35 + ' Traceback ' +
+                '=' * 35 + '\n' + traceback.format_exc())
             f.write('=' * 81 + '\n')
 
         f.write(report_footer.format(

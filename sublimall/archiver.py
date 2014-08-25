@@ -26,7 +26,8 @@ class Archiver:
             sublime.installed_packages_path(): '.sublime-package'
         }
         self.packages_bak_path = '%s.bak' % sublime.packages_path()
-        self.installed_packages_bak_path = '%s.bak' % sublime.installed_packages_path()
+        self.installed_packages_bak_path = '%s.bak' % (
+            sublime.installed_packages_path())
         self.settings = sublime.load_settings(SETTINGS_USER_FILE)
 
     def _safe_rmtree(self, directory):
@@ -62,7 +63,8 @@ class Archiver:
         Returns the default output directory
         """
         # Assuming Packages and Installed Packages are in the same directory !
-        return os.path.abspath(os.path.join(list(self.directory_list)[0], os.path.pardir))
+        return os.path.abspath(os.path.join(
+            list(self.directory_list)[0], os.path.pardir))
 
     def _run_executable(self, command, password=None, **kwargs):
         """
@@ -73,14 +75,16 @@ class Archiver:
         # Pack archive
         if command == 'a':
             assert 'output_filename' in kwargs
-            command_args = [self._get_7za_executable(), command, '-tzip', '-mx=9', '-y']
+            command_args = [
+                self._get_7za_executable(), command, '-tzip', '-mx=9', '-y']
             if self.settings.get('symlinks', False):
                 command_args.append('-l')
-            if password is not None:
+            if password:
                 command_args.append('-p%s' % password)
             if 'excluded_dirs' in kwargs:
                 command_args.extend(
-                    ['-x!%s*' % excluded_dir for excluded_dir in kwargs['excluded_dirs']])
+                    ['-x!%s*' % excluded_dir
+                        for excluded_dir in kwargs['excluded_dirs']])
             command_args.append(kwargs['output_filename'])
             command_args.extend(self.directory_list.keys())
         # Unpack archive
@@ -137,7 +141,9 @@ class Archiver:
         pc_settings = sublime.load_settings('Package Control.sublime-settings')
         installed_packages = pc_settings.get('installed_packages', [])
         return [
-            '%s%s' % (os.path.join(os.path.split(directory)[1], package_name), suffix)
+            '%s%s' % (
+                os.path.join(os.path.split(directory)[1], package_name),
+                suffix)
             for package_name in installed_packages if package_name.lower() != 'package control'
             for directory, suffix in self.directory_list.items()
         ]
@@ -149,9 +155,11 @@ class Archiver:
         self.remove_backup_dirs()
 
         logger.info('Move %s to %s' % (
-            sublime.installed_packages_path(), self.installed_packages_bak_path))
+            sublime.installed_packages_path(),
+            self.installed_packages_bak_path))
         self._safe_copy(
-            sublime.installed_packages_path(), self.installed_packages_bak_path)
+            sublime.installed_packages_path(),
+            self.installed_packages_bak_path)
         logger.info('Move %s to %s' % (
             sublime.packages_path(), self.packages_bak_path))
         self._safe_copy(
@@ -161,7 +169,9 @@ class Archiver:
         """
         Removes packages backups directories
         """
-        for directory in [self.packages_bak_path, self.installed_packages_bak_path]:
+        for directory in [
+                self.packages_bak_path,
+                self.installed_packages_bak_path]:
             logger.info('Remove old backup dir: %s' % directory)
             self._safe_rmtree(directory)
 
@@ -176,7 +186,8 @@ class Archiver:
         """
         excluded_dirs = kwargs.get('excluded_dirs', [])
         packages_root_path = os.path.basename(sublime.packages_path())
-        installed_packages_root_path = os.path.basename(sublime.installed_packages_path())
+        installed_packages_root_path = os.path.basename(
+            sublime.installed_packages_path())
 
         # Append blacklisted Packages to excluded dirs
         for package in blacklist.packages:
@@ -184,7 +195,8 @@ class Archiver:
 
         # Append blacklisted Installed Packages to excluded dirs
         for package in blacklist.installed_packages:
-            excluded_dirs.append(os.path.join(installed_packages_root_path, package))
+            excluded_dirs.append(os.path.join(
+                installed_packages_root_path, package))
 
         # Append custom ignored packages
         for package in blacklist.get_ignored_packages():
@@ -211,4 +223,7 @@ class Archiver:
             output_dir = self._get_output_dir()
         logger.info('Extract in %s directory' % output_dir)
         self._run_executable(
-            'x', password=password, input_file=input_file, output_dir=output_dir)
+            'x',
+            password=password,
+            input_file=input_file,
+            output_dir=output_dir)
