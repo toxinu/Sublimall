@@ -35,6 +35,7 @@ class UploadCommand(
             self.unset_message()
         self.running = False
         self.archive_filename = None
+        self.prompt_value = ''
 
     def pack_and_send(self):
         """
