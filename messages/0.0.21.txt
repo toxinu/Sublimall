@@ -1,0 +1,6 @@
+Sublimall 0.0.21 Changelog:
+
+New stuff:
+ - Hidden password prompt
+ - Better error handling for 7zip path detection
+ - Some bug fixes
