@@ -175,6 +175,7 @@ class UploadCommand(
                 '%s\n'
                 '===============================' % (
                     self.api_upload_url, r.status_code, err))
+            return
 
         f.close()
         os.unlink(self.archive_filename)
