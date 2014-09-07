@@ -82,7 +82,6 @@ class RetrieveCommand(
         else:
             self.zf.close()
             self.set_message("Archive decrypted. Applying configuration.")
-            sublime.message_dialog('THIS IS BLOKK')
 
             sublime.set_timeout_async(self.unpack, 0)
 
