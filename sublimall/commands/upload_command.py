@@ -78,23 +78,26 @@ class UploadCommand(
             if r.json().get('success'):
                 return r.json().get('output')
             else:
-                self.set_timed_message("Bad credentials", clear=True)
-                logger.info('Bad credentials')
+                self.set_timed_message("Bad credentials.", clear=True)
+                self.running = False
+                logger.info('Bad credentials.')
         except Exception as err:
-            self.set_timed_message("Error while retrieving max package size")
+            self.set_timed_message(
+                "Error while retrieving max package size.", clear=True)
+            self.running = False
             logger.error(
-                'Server: %s\nHttp code: %s\n'
+                'Server: %s\n'
                 '==========[EXCEPTION]==========\n'
                 '%s\n'
                 '===============================' % (
-                    self.api_max_package_size_url, r.status_code, err))
+                    self.api_max_package_size_url, err))
 
     def send_to_api(self):
         """
         Send archive file to API
         """
         if not os.path.exists(self.archive_filename):
-            msg = "Error while sending archive: archive not found"
+            msg = "Error while sending archive: archive not found."
             self.set_timed_message(msg)
             show_report(
                 msg + '\n' + 'Path:%s' % self.archive_filename,
