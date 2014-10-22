@@ -223,7 +223,7 @@ class RetrieveCommand(
         archiver.remove_backup_dirs()
 
         self.set_message(u"Your Sublime Text has been synced !")
-        logger.info('Finised')
+        logger.info('Finished')
 
         if self._package_control_has_packages():
             message_lines = [

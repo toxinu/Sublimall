@@ -11,6 +11,7 @@ from .logger import logger
 from .utils import is_win
 from .utils import get_7za_bin
 from .utils import generate_temp_filename
+from .utils import generate_temp_path
 
 
 class Archiver:
@@ -47,6 +48,23 @@ class Archiver:
         """
         if os.path.exists(source):
             shutil.move(source, destination)
+
+    # shutil.copytree fails if dst exists
+    def _copy_tree(self, src, dst, symlinks=False, ignore=None):
+        logger.info("Copy %s to %s" % (src, dst))
+        if not os.path.exists(dst):
+            os.makedirs(dst)
+        for item in os.listdir(src):
+            s = os.path.join(src, item)
+            d = os.path.join(dst, item)
+            if os.path.isdir(s):
+                self._copy_tree(s, d, symlinks, ignore)
+            else:
+                if not os.path.exists(d) or os.stat(src).st_mtime - os.stat(dst).st_mtime > 1:
+                    try:
+                        shutil.copy2(s, d)
+                    except (Error) as why:
+                        logger.error('shutil.copy2 - %s' % why)
 
     def _get_7za_executable(self):
         """
@@ -221,9 +239,15 @@ class Archiver:
         """
         if output_dir is None:
             output_dir = self._get_output_dir()
-        logger.info('Extract in %s directory' % output_dir)
+        temp_dir = generate_temp_path()
+        logger.info('Extract in %s directory' % temp_dir)
         self._run_executable(
             'x',
             password=password,
             input_file=input_file,
-            output_dir=output_dir)
+            output_dir=temp_dir)
+        logger.info('Copy from %s to %s' % (temp_dir, output_dir))
+        self._copy_tree(temp_dir, output_dir)
+        logger.info('Remove %s' % temp_dir)
+        self._safe_rmtree(temp_dir)
+
