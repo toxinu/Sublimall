@@ -26,7 +26,7 @@ from ndg.httpsclient.subj_alt_name import SubjectAltName
 import OpenSSL.SSL
 from pyasn1.codec.der import decoder as der_decoder
 from socket import _fileobject
-import ssl
+import _ssl as ssl
 
 from .. import connectionpool
 from .. import util

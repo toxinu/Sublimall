@@ -26,7 +26,7 @@ class CommandWithStatus(object):
     """
     def __init__(self, *args, **kwargs):
         self._messageStatus = MessageStatus()
-        sublime.set_timeout(lambda: self.unset_message, 1000)
+        sublime.set_timeout(lambda: self.unset_message, 3000)
         super().__init__(*args, **kwargs)
 
     def set_timed_message(self, message, time=7, clear=False):

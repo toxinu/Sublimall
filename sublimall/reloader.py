@@ -21,6 +21,7 @@ mod_prefix = 'Sublimall.sublimall'
 
 mods_load_order = [
     '',
+    '.requests',
     '.archiver',
     '.blacklist',
     '.logger',
