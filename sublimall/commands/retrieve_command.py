@@ -171,7 +171,8 @@ class RetrieveCommand(
                 pass
             show_report(
                 'Unhandled Http error while '
-                'downloading (%s).\n\n%s' % (r.status_code, r.content))
+                'downloading (%s).\n\n%s' % (r.status_code, r.content),
+                exception=False)
             self.set_timed_message(msg, clear=True, time=10)
             logger.error("HTTP [%s] %s" % (r.status_code, r.content))
 

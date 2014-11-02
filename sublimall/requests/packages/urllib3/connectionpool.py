@@ -30,14 +30,12 @@ try: # Compiled with SSL?
     class BaseSSLError(BaseException):
         pass
 
-    ssl = None
-
     try: # Python 3
         from http.client import HTTPSConnection
     except ImportError:
         from httplib import HTTPSConnection
 
-    import _ssl as ssl
+    import ssl
     BaseSSLError = ssl.SSLError
 
 except (ImportError, AttributeError): # Platform-specific: No SSL.
