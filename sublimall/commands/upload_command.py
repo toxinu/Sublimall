@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import os
+import shutil
 import sublime
 from urllib.parse import urljoin
 from sublime_plugin import ApplicationCommand
@@ -48,7 +49,16 @@ class UploadCommand(
             self.archive_filename = archiver.pack_packages(
                 password=self.prompt_value,
                 exclude_from_package_control=self.exclude_from_package_control)
-            self.send_to_api()
+            if self.local_backup:
+                shutil.copy(self.archive_filename, self.archives_path)
+                self.set_timed_message(
+                    "Archive successfully copied. Make a donation at "
+                    "http://sublimall.org/donate !",
+                    time=10,
+                    clear=True)
+                self.post_send()
+            else:
+                self.send_to_api()
         except Exception as err:
             msg = 'Error while creating archive'
             show_report(msg)
@@ -231,6 +241,9 @@ class UploadCommand(
             self.settings.get('api_root_url'),
             self.settings.get('api_max_package_size_url'))
 
+        self.archives_path = self.settings.get('archives_path')
+        self.local_backup = self.settings.get('local_backup')
+
         logger.info('Starting upload')
 
         self.email = self.settings.get('email', '')
@@ -239,7 +252,7 @@ class UploadCommand(
             'exclude_from_package_control', False)
         self.encrypt = self.settings.get('encrypt', False)
 
-        if not self.email or not self.api_key:
+        if not self.local_backup and (not self.email or not self.api_key):
             self.set_timed_message(
                 "api_key or email is missing in your"
                 " Sublimall configuration", clear=True)

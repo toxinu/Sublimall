@@ -1,0 +1,26 @@
+Sublimall 0.0.25 Changelog:
+
+As a reminder:
+
+> I made the decision to stop Sublimall development. 
+> But you have to know that Sublimall and server side source codes are already on Github and they will stay open source forever.
+> Then, Sublimall is not dead! My second motivation behind Sublimall was to allow you to install your own instance for 
+> your company or friends and you'll still able to do that.
+>
+> You can easily install Sublimall server on a Digital Ocean droplet for example. Just follow this guide.
+> https://github.com/socketubs/sublimall-server/blob/master/INSTALL.md
+
+New stuff
+ - Two news settings in your user settings file: local_backup (boolean) and archives_path (string)
+ 	- local_backup (boolean): Won't upload package but use archives_path instead to store your archive locally
+ 	- archives_path (string): Path to a directory or a file to create for your archive.
+
+Help
+ - On Sublimall website: http://sublimall.org/docs
+ - You can find information on Github: https://github.com/socketubs/Sublimall
+ - Create an issue on Github
+ - Email me: hello@sublimall.org
+
+Thank you for using Sublimall!
+
+Geoffrey.

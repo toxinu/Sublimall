@@ -12,6 +12,10 @@
     ///////////////////////
     "email": "",
     "api_key": "",
+
+    // "archives_path": "/tmp",
+    // "local_backup": true
+    
     // Paths must be: "Packages/SublimeCodeIntel" or "Installed Packages/Sublimall"
     "ignore_packages": [],
     // Set true if you want to exclude packages managed by Package Control
