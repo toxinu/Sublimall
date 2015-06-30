@@ -1,7 +1,7 @@
 Sublimall
 =========
 
-**Warning**: For people who saw Sublimall in trending, you have to know that I stop maintaining this project. But plugin and server source code are on github and maintainers are welcome! **You can also deploy your own Sublimall server to Heroku with [one click](https://github.com/vinta/sublimall-server#sublimall-server).**
+**Warning**: For people who saw Sublimall in trending, you have to know that I stop maintaining this project. But plugin and server source code are on github and maintainers are welcome!
 
 Sublimall is the way to sync and save your SublimeText configuration everywhere. Just create an account, install the plugin and that's all.
 Sublimall is an opensource, [server](http://sublimall.org) and [plugin](https://github.com/socketubs/Sublimall).
