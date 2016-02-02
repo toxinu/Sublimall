@@ -77,3 +77,7 @@ def get_7za_bin():
 def generate_temp_filename():
     return os.path.join(
         tempfile.gettempdir(), 'sublime-sync_%s.zip' % str(uuid.uuid4()))
+
+def generate_temp_path():
+    return os.path.join(
+        tempfile.gettempdir(), 'sublime-sync_%s' % str(uuid.uuid4()))
