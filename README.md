@@ -19,7 +19,7 @@ If for any reason you can't found Sublimall on Package Control, there is a manua
 
 * Open a terminal
 * Go to SublimeText plugins directory (cd $HOME/.config/sublime-text-3/Packages)
-* And clone Sublimall repository: ``git clone https://github.com/socketubs/Sublimall.git``
+* And clone Sublimall repository: ``git clone https://github.com/toxinu/Sublimall.git``
 
 Report a bug
 ============
